@@ -56,7 +56,7 @@ body{
 #mt i{flex:1;height:12px;border-radius:6px;background:#ffffff1f;transition:background .5s, box-shadow .5s}
 #ending-text{font-size:14px;line-height:1.5;color:#f4eaffcc;background:#2c184055;border-left:3px solid var(--pk);padding:12px 14px;border-radius:8px;margin-bottom:16px;text-align:left;font-style:italic}
 .btn{text-align:center;width:100%}
-#start{position:fixed;inset:0;background:#120a1cee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;z-index:20;backdrop-filter:blur(4px);overflow-y:auto}
+#start{position:fixed;inset:0;background:#120a1cee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;z-index:20;backdrop-filter:blur(4px);overflow-y:auto}
 #start h1{margin:0;font-size:28px}
 #start p{opacity:.7;margin:0;font-size:14px;line-height:1.5}
 .name-input{background:#2c1840ee;color:var(--tx);border:2px solid var(--us);border-radius:12px;padding:14px 16px;font-size:18px;font-family:inherit;width:100%;max-width:320px;text-align:center;outline:none;transition:border-color .3s, box-shadow .3s;box-shadow:0 0 15px #6fb4ff22}
@@ -64,8 +64,8 @@ body{
 .name-input::placeholder{color:#ffffff55}
 .name-input.error{border-color:#e33;box-shadow:0 0 25px #e3355;animation:shake-input 0.4s}
 @keyframes shake-input{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}
-.name-hint{font-size:13px;color:#e33;opacity:0;transition:opacity .3s;min-height:16px;font-weight:600;text-shadow:0 0 8px #e3380}
-.name-hint.show{opacity:1}
+.name-hint{font-size:12px;color:#ffffff66;transition:color .3s, opacity .3s;min-height:16px;font-weight:500;max-width:320px;text-align:center;line-height:1.3}
+.name-hint.error{color:#e33;font-weight:700;text-shadow:0 0 10px #e3380;font-size:13px}
 .btn-primary{background:linear-gradient(135deg, #ff8a1f, #ff5c00);color:#1d1128;font-weight:700;border:none;padding:14px 20px;border-radius:12px;font-size:17px;cursor:pointer;font-family:inherit;width:100%;max-width:320px;box-shadow:0 0 25px #ff8a1f66;transition:transform .1s, box-shadow .3s}
 .btn-primary:active{transform:scale(0.97);box-shadow:0 0 40px #ff8a1f99}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
@@ -84,36 +84,27 @@ body{
   align-items:center;justify-content:center;gap:24px;padding:24px;z-index:100;
   text-align:center;
 }
-#loading .loading-title{
-  font-size:22px;font-weight:700;color:var(--pk);
-  text-shadow:0 0 15px #ff8a1f88;letter-spacing:2px;
+#loading .loading-title{font-size:22px;font-weight:700;color:var(--pk);text-shadow:0 0 15px #ff8a1f88;letter-spacing:2px}
+#loading .loading-pumpkin{font-size:70px;animation:fl 2s ease-in-out infinite;filter:drop-shadow(0 0 20px #ff8a1faa)}
+#loading .progress-wrap{width:100%;max-width:320px;height:14px;background:#2c1840aa;border-radius:8px;overflow:hidden;border:1px solid #6fb4ff44;box-shadow:inset 0 0 10px #00000088}
+#loading .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#ff8a1f,#ff5c00);transition:width .3s ease;box-shadow:0 0 15px #ff8a1faa}
+#loading .progress-text{font-size:13px;opacity:.7;letter-spacing:1px;font-family:monospace}
+#loading .progress-name{font-size:12px;opacity:.5;min-height:16px}
+
+/* Кнопка "Сменить имя" на экране блокировки */
+.btn-change-name{
+  margin-top:14px;background:transparent;color:#ff8a1f;border:1.5px solid #ff8a1f;
+  border-radius:10px;padding:9px 16px;font-size:13px;cursor:pointer;
+  font-family:inherit;transition:background .2s;
 }
-#loading .loading-pumpkin{
-  font-size:70px;animation:fl 2s ease-in-out infinite;
-  filter:drop-shadow(0 0 20px #ff8a1faa);
-}
-#loading .progress-wrap{
-  width:100%;max-width:320px;height:14px;background:#2c1840aa;
-  border-radius:8px;overflow:hidden;border:1px solid #6fb4ff44;
-  box-shadow:inset 0 0 10px #00000088;
-}
-#loading .progress-bar{
-  height:100%;width:0%;background:linear-gradient(90deg,#ff8a1f,#ff5c00);
-  transition:width .3s ease;box-shadow:0 0 15px #ff8a1faa;
-}
-#loading .progress-text{
-  font-size:13px;opacity:.7;letter-spacing:1px;font-family:monospace;
-}
-#loading .progress-name{
-  font-size:12px;opacity:.5;min-height:16px;
-}
+.btn-change-name:active{background:#ff8a1f22}
 </style>
 </head>
 <body>
 <div id="bg-spiral"></div>
 <div id="bg-overlay"></div>
 
-<!-- ⬇️ ЭКРАН ЗАГРУЗКИ ⬇️ -->
+<!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loading">
   <div class="loading-pumpkin">🎃</div>
   <div class="loading-title">ЗАГРУЗКА...</div>
@@ -149,7 +140,7 @@ body{
   <p id="startSub">Нажимай на текст, чтобы листать.<br>Выбирай реплики сам.</p>
   <div id="lockedBox" style="display:none"></div>
   <input type="text" id="nameInput" class="name-input" placeholder="Введи своё имя..." maxlength="20" autocomplete="off">
-  <div class="name-hint" id="nameHint">Пожалуйста, укажи своё имя!</div>
+  <div class="name-hint" id="nameHint">Указывай своё настоящее имя</div>
   <button class="btn-primary" id="go" disabled>Начать</button>
   <div class="save-status" id="startStatus"></div>
 </div>
@@ -178,9 +169,6 @@ try{
   console.error("✗ Ошибка Firebase:", e);
 }
 
-/* ============================================================
-   ЭМОЦИИ ТЫКВЫ (все картинки)
-   ============================================================ */
 const IMG={
   greet:"https://i.postimg.cc/XYBnMR93/FA875B24-F64E-4763-9A29-FCE909242FE7.png",
   conf:"https://i.postimg.cc/T35T8znx/05953127-26C6-4D3D-BB77-4A225B9E6D8A.png",
@@ -192,64 +180,41 @@ const IMG={
   into:"https://i.postimg.cc/Nj2Qh3mb/IMG-4788.png"
 };
 
-/* ============================================================
-   🚀 ПРЕДЗАГРУЗКА ВСЕХ КАРТИНОК С ПРОГРЕСС-БАРОМ
-   ============================================================ */
-const NAMES_FOR_LOAD = {
-  greet:"Приветствие",
-  conf:"Растерянность",
-  slay:"Сплетни",
-  angry:"Злость",
-  rage:"Ярость",
-  bored:"Скука",
-  disap:"Разочарование",
-  into:"Вовлечённость"
+const NAMES_FOR_LOAD={
+  greet:"Приветствие",conf:"Растерянность",slay:"Сплетни",angry:"Злость",
+  rage:"Ярость",bored:"Скука",disap:"Разочарование",into:"Вовлечённость"
 };
 
 function preloadAllImages(){
-  const entries = Object.entries(IMG);
-  const total = entries.length;
-  let loaded = 0;
-  let failed = 0;
-  const progressBar = document.getElementById("progressBar");
-  const progressText = document.getElementById("progressText");
-  const progressName = document.getElementById("progressName");
+  const entries=Object.entries(IMG);
+  const total=entries.length;
+  let loaded=0,failed=0;
+  const progressBar=document.getElementById("progressBar");
+  const progressText=document.getElementById("progressText");
+  const progressName=document.getElementById("progressName");
 
-  return new Promise((resolve) => {
-    entries.forEach(([key, url]) => {
-      const img = new Image();
-      img.onload = () => {
-        loaded++;
-        updateProgress();
-      };
-      img.onerror = () => {
-        failed++;
-        loaded++;
-        console.warn("Не удалось загрузить:", url);
-        updateProgress();
-      };
-      img.src = url;
-      progressName.textContent = `Загрузка: ${NAMES_FOR_LOAD[key] || key}...`;
-
+  return new Promise(resolve=>{
+    entries.forEach(([key,url])=>{
+      const img=new Image();
+      img.onload=()=>{loaded++;updateProgress()};
+      img.onerror=()=>{failed++;loaded++;updateProgress()};
+      img.src=url;
+      progressName.textContent=`Загрузка: ${NAMES_FOR_LOAD[key]||key}...`;
       function updateProgress(){
-        const pct = Math.round((loaded / total) * 100);
-        progressBar.style.width = pct + "%";
-        progressText.textContent = pct + "%";
-        if(loaded >= total){
-          progressText.textContent = "100% — Готово!";
-          progressName.textContent = failed > 0
-            ? `Загружено ${total - failed} из ${total} (${failed} не удалось)`
-            : `Все ${total} эмоций загружены 🎃`;
-          setTimeout(resolve, 400);
+        const pct=Math.round((loaded/total)*100);
+        progressBar.style.width=pct+"%";
+        progressText.textContent=pct+"%";
+        if(loaded>=total){
+          progressText.textContent="100% — Готово!";
+          progressName.textContent=failed>0?`Загружено ${total-failed} из ${total}`:`Все ${total} эмоций загружены 🎃`;
+          setTimeout(resolve,400);
         }
       }
     });
   });
 }
 
-/* ============================================================ */
-
-const P="p", U="u";
+const P="p",U="u";
 const GREET=["Здравствуй, ничтожество","Еще один, да откуда вы лезете","Может, надо было вас в крыс превратить, чтобы вы меня не доставали?","Долго молчать будем?"];
 const BS="Не люблю говорить все по два раза, поэтому слушай внимательно! Я был таким же как они - этим склизким, мерзким существом - тюленем. Но им видите ли мой характер не нравился! «Тюленчики же добрые! Они не могут обижать себя и других» - говорили они. И в один из дней, из-за какой-то #%@₽# они меня схватили, привязали к стулу и... ОБРАТИЛИ МЕНЯ В ТЫКВУ! И скинули в это подземелье, чтобы меня никто не нашел... Но вы, глупенькие подростки, ищущие приключения на задницу, освободили меня! Теперь я расхреначу Тюленчиков, а потом и всех людей превращу в подчиняемых мне КУКОЛ ВУДУ!";
 const AFTER=[["А может у тебя мания величия? Я согласен с ними, все тюленчики должны быть позитивными и добрыми!","mania"],["Согласен с тобой, эти тюленчики еще те Твари!","agree"]];
@@ -292,12 +257,12 @@ pa2:{l:[[P,"...."]],e:"Недоверительное"}
 
 const LV={"Ужасное":[1,"#e33"],"Недоверительное":[2,"#f90"],"Смешанное":[3,"#fd3"],"Хорошее":[4,"#5d5"],"Бести":[5,"#f6c"]};
 
-const ENDING_TEXT = {
-  "Ужасное": "Походу ты был слишком груб с тыквой. Или он слишком ранимый... Посмотрим, что будет дальше, возвращайся сюда на следующий день!",
-  "Недоверительное": "Ну... Это всяко лучше чем ужасное отношение... Попробуй с ним чуть нежнее в следующий раз, может быть у вас что-то да склеится",
-  "Смешанное": "Тыква явно не обозлен на тебя, но и не доверяет тебе... Но ты идешь в правильном направлении, так держать!",
-  "Хорошее": "Тыква явно доволен диалогом с тобой, ведь ты выделился от основной массы, быть может вы приближаетесь к статусу друзья?",
-  "Бести": "Не знаю как, но тебе удалось стать чуть ли не лучшими друзьями с тыквой. Сплетни любят все, главное поддерживай с ней положительный контакт!"
+const ENDING_TEXT={
+  "Ужасное":"Походу ты был слишком груб с тыквой. Или он слишком ранимый... Посмотрим, что будет дальше, возвращайся сюда на следующий день!",
+  "Недоверительное":"Ну... Это всяко лучше чем ужасное отношение... Попробуй с ним чуть нежнее в следующий раз, может быть у вас что-то да склеится",
+  "Смешанное":"Тыква явно не обозлен на тебя, но и не доверяет тебе... Но ты идешь в правильном направлении, так держать!",
+  "Хорошее":"Тыква явно доволен диалогом с тобой, ведь ты выделился от основной массы, быть может вы приближаетесь к статусу друзья?",
+  "Бести":"Не знаю как, но тебе удалось стать чуть ли не лучшими друзьями с тыквой. Сплетни любят все, главное поддерживай с ней положительный контакт!"
 };
 
 const RULES=[
@@ -317,21 +282,32 @@ const $=id=>document.getElementById(id);
 let q=[],cur=null,pend=null,typing=false,tm=null,full="";
 let currentPlayerName="",currentChoices=[];
 
-/* ==== localStorage ==== */
+/* ============ localStorage ============ */
 const PLAYED_KEY = "tykva_played_players";
+const CURRENT_KEY = "tykva_current_player";
+
 function getPlayedPlayers(){
-  try{const raw = localStorage.getItem(PLAYED_KEY);return raw ? JSON.parse(raw) : {}}
+  try{const raw=localStorage.getItem(PLAYED_KEY);return raw?JSON.parse(raw):{}}
   catch(e){return{}}
 }
-function savePlayedPlayer(name, relation, level){
-  const all = getPlayedPlayers();
-  all[name] = {name, relation, level, date: Date.now()};
-  try{localStorage.setItem(PLAYED_KEY, JSON.stringify(all))}
-  catch(e){console.warn("localStorage error:", e)}
+function savePlayedPlayer(name,relation,level){
+  const all=getPlayedPlayers();
+  all[name]={name,relation,level,date:Date.now()};
+  try{localStorage.setItem(PLAYED_KEY,JSON.stringify(all))}
+  catch(e){console.warn("localStorage error:",e)}
 }
 function getPlayedPlayer(name){
-  const all = getPlayedPlayers();
-  return all[name] || null;
+  const all=getPlayedPlayers();
+  return all[name]||null;
+}
+function setCurrentPlayer(name){
+  try{localStorage.setItem(CURRENT_KEY,name)}catch(e){}
+}
+function getCurrentPlayer(){
+  try{return localStorage.getItem(CURRENT_KEY)}catch(e){return null}
+}
+function clearCurrentPlayer(){
+  try{localStorage.removeItem(CURRENT_KEY)}catch(e){}
 }
 
 function shakeScreen(strong=false){
@@ -370,12 +346,12 @@ function next(){
 async function sendToFirebase(name,relation,level,choices){
   if(!db) return {ok:false,error:"Firebase не подключён"};
   try{
-    const savesRef = ref(db, 'tykva_saves');
-    const newRef = push(savesRef);
-    await set(newRef, {name, relation, level, date: Date.now(), choices});
+    const savesRef=ref(db,'tykva_saves');
+    const newRef=push(savesRef);
+    await set(newRef,{name,relation,level,date:Date.now(),choices});
     return {ok:true};
   }catch(err){
-    console.error("Firebase ошибка:", err);
+    console.error("Firebase ошибка:",err);
     return {ok:false,error:err.message};
   }
 }
@@ -384,11 +360,11 @@ async function showEnding(relation){
   const[n,c]=LV[relation];
   $("lab").textContent=relation;$("lab").style.color=c;
   [...$("mt").children].forEach((s,i)=>{s.style.background=i<n?c:"";s.style.boxShadow=i<n?`0 0 10px ${c}`:""});
-  $("ending-text").textContent = ENDING_TEXT[relation] || "";
-  $("ending-text").style.borderLeftColor = c;
+  $("ending-text").textContent=ENDING_TEXT[relation]||"";
+  $("ending-text").style.borderLeftColor=c;
   const st=$("saveStatus");st.textContent="Сохраняем...";st.className="save-status";
   $("end").style.display="flex";
-  savePlayedPlayer(currentPlayerName, relation, n);
+  savePlayedPlayer(currentPlayerName,relation,n);
   const result=await sendToFirebase(currentPlayerName,relation,n,currentChoices);
   if(result.ok){st.textContent=`✓ Результат для «${currentPlayerName}» сохранён`;st.className="save-status ok"}
   else{st.textContent=`⚠ Не сохранилось: ${result.error}`;st.className="save-status err"}
@@ -402,44 +378,87 @@ function begin(){
 }
 
 function showLockedScreen(player){
-  $("nameInput").style.display = "none";
-  $("go").style.display = "none";
-  $("nameHint").style.display = "none";
-  $("startSub").style.display = "none";
-  const lb = $("lockedBox");
-  lb.style.display = "block";
-  const [n, c] = LV[player.relation] || [3, "#fd3"];
-  lb.innerHTML = `
+  $("nameInput").style.display="none";
+  $("go").style.display="none";
+  $("nameHint").style.display="none";
+  $("startSub").style.display="none";
+  const lb=$("lockedBox");
+  lb.style.display="block";
+  const [n,c]=LV[player.relation]||[3,"#fd3"];
+  lb.innerHTML=`
     <div class="locked-badge">Уже пройдено</div>
     <div style="background:#1d1128ee;border:2px solid ${c};border-radius:14px;padding:16px 18px;max-width:340px;text-align:center;box-shadow:0 0 30px ${c}55;">
+      <div style="font-size:13px;opacity:.7;margin-bottom:6px">Привет, <b style="color:${c}">${player.name}</b>!</div>
       <div style="font-size:13px;opacity:.7;margin-bottom:6px">Твоё отношение с Тыквой:</div>
       <div style="font-size:24px;font-weight:800;color:${c};margin-bottom:12px;text-shadow:0 0 12px ${c}aa">${player.relation}</div>
       <div style="display:flex;gap:5px;margin-bottom:14px">
         ${[1,2,3,4,5].map(i=>`<i style="flex:1;height:10px;border-radius:5px;background:${i<=n?c:'#ffffff22'};${i<=n?`box-shadow:0 0 8px ${c}`:''}"></i>`).join("")}
       </div>
       <div style="font-size:12px;opacity:.7;line-height:1.5;font-style:italic">
-        ${ENDING_TEXT[player.relation] || ""}
+        ${ENDING_TEXT[player.relation]||""}
       </div>
+      <button class="btn-change-name" id="changeName">Сменить имя</button>
     </div>
   `;
+  // Обработчик "Сменить имя" — сбрасывает текущего игрока
+  setTimeout(()=>{
+    const btn=$("changeName");
+    if(btn){
+      btn.addEventListener("click",()=>{
+        clearCurrentPlayer();
+        location.reload();
+      });
+    }
+  },50);
 }
 
 /* ============================================================
-   ОБРАБОТЧИКИ СОБЫТИЙ
+   ГЛАВНАЯ ЛОГИКА ЗАПУСКА
    ============================================================ */
-window.addEventListener("DOMContentLoaded", () => {
+(async () => {
+  // 1. Грузим все картинки
+  await preloadAllImages();
+  $("loading").style.display = "none";
+  pk.src = IMG.greet;
+  $("si").src = IMG.greet;
+
+  // 2. Проверяем — может, игрок уже вводил имя?
+  const saved = getCurrentPlayer();
+  if(saved){
+    currentPlayerName = saved;
+    const played = getPlayedPlayer(saved);
+    $("start").style.display = "flex";
+    if(played){
+      // уже доиграл → показать блокировку
+      showLockedScreen(played);
+    } else {
+      // вводил имя, но не доиграл → предзаполнить поле
+      const nameInput = $("nameInput");
+      nameInput.value = saved;
+      $("go").disabled = false;
+      $("nameHint").textContent = `Продолжаем, ${saved}?`;
+      $("nameHint").style.color = "#6fb4ff";
+    }
+  } else {
+    // первый раз → обычный старт
+    $("start").style.display = "flex";
+  }
+
+  // 3. Обработчики событий
   const nameInput = $("nameInput");
   const goBtn = $("go");
   const startStatus = $("startStatus");
   const nameHint = $("nameHint");
 
-  // Показать/скрыть подсказку
   nameInput.addEventListener("input", () => {
     const v = nameInput.value.trim();
     if(v.length >= 1){
       goBtn.disabled = false;
-      nameHint.classList.remove("show");
-      nameInput.classList.remove("error");
+      nameHint.classList.remove("error");
+      if(!getCurrentPlayer()){
+        nameHint.textContent = "Указывай своё настоящее имя";
+        nameHint.style.color = "#ffffff66";
+      }
     } else {
       goBtn.disabled = true;
     }
@@ -447,18 +466,19 @@ window.addEventListener("DOMContentLoaded", () => {
     startStatus.className = "save-status";
   });
 
-  // Если кликнул на кнопку с пустым именем — показать подсказку
   goBtn.addEventListener("click", () => {
     const v = nameInput.value.trim();
     if(v.length < 1){
-      nameHint.classList.add("show");
+      nameHint.textContent = "Пожалуйста, укажи своё имя!";
+      nameHint.classList.add("error");
       nameInput.classList.add("error");
       nameInput.focus();
       setTimeout(() => nameInput.classList.remove("error"), 500);
       return;
     }
-    // ok — продолжаем
     currentPlayerName = v;
+    setCurrentPlayer(currentPlayerName); // ← сохраняем сразу
+
     const played = getPlayedPlayer(currentPlayerName);
     if(played){
       showLockedScreen(played);
@@ -485,19 +505,6 @@ window.addEventListener("DOMContentLoaded", () => {
   $("ch").addEventListener("click", (e) => {
     if(e.target.tagName !== "BUTTON") next();
   });
-});
-
-/* ============================================================
-   🚀 ЗАПУСК: сначала грузим картинки, потом показываем старт
-   ============================================================ */
-(async () => {
-  await preloadAllImages();
-  // показываем экран старта, скрываем загрузку
-  $("loading").style.display = "none";
-  $("start").style.display = "flex";
-  // ставим первую эмоцию на оба экрана
-  pk.src = IMG.greet;
-  $("si").src = IMG.greet;
 })();
 </script>
 </body>
