@@ -64,12 +64,12 @@ body{
 .name-input::placeholder{color:#ffffff55}
 .name-input.error{border-color:#e33;box-shadow:0 0 25px #e3355;animation:shake-input 0.4s}
 @keyframes shake-input{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}
-.name-hint{font-size:12px;color:#ffffff66;transition:color .3s, opacity .3s;min-height:16px;font-weight:500;max-width:320px;text-align:center;line-height:1.3}
+.name-hint{font-size:12px;color:#ffffff66;transition:color .3s;min-height:16px;font-weight:500;max-width:320px;text-align:center;line-height:1.3}
 .name-hint.error{color:#e33;font-weight:700;text-shadow:0 0 10px #e3380;font-size:13px}
 .btn-primary{background:linear-gradient(135deg, #ff8a1f, #ff5c00);color:#1d1128;font-weight:700;border:none;padding:14px 20px;border-radius:12px;font-size:17px;cursor:pointer;font-family:inherit;width:100%;max-width:320px;box-shadow:0 0 25px #ff8a1f66;transition:transform .1s, box-shadow .3s}
 .btn-primary:active{transform:scale(0.97);box-shadow:0 0 40px #ff8a1f99}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
-.save-status{font-size:12px;opacity:.6;text-align:center;max-width:320px;min-height:16px;transition:opacity .3s}
+.save-status{font-size:12px;opacity:.6;text-align:center;max-width:320px;min-height:16px}
 .save-status.ok{color:#5d5;opacity:1}
 .save-status.err{color:#e33;opacity:1}
 .shake{animation:shake 0.4s cubic-bezier(.36,.07,.19,.97) both}
@@ -77,34 +77,19 @@ body{
 .shake-strong{animation:shake-strong 0.5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes shake-strong{10%,90%{transform:translate3d(-4px,-2px,0)}20%,80%{transform:translate3d(8px,2px,0)}30%,50%,70%{transform:translate3d(-12px,-2px,0)}40%,60%{transform:translate3d(12px,2px,0)}}
 .locked-badge{display:inline-block;background:#e33;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
-
-/* ==== ЭКРАН ЗАГРУЗКИ ==== */
-#loading{
-  position:fixed;inset:0;background:#120a1c;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:24px;padding:24px;z-index:100;
-  text-align:center;
-}
+#loading{position:fixed;inset:0;background:#120a1c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:24px;z-index:100;text-align:center}
 #loading .loading-title{font-size:22px;font-weight:700;color:var(--pk);text-shadow:0 0 15px #ff8a1f88;letter-spacing:2px}
 #loading .loading-pumpkin{font-size:70px;animation:fl 2s ease-in-out infinite;filter:drop-shadow(0 0 20px #ff8a1faa)}
 #loading .progress-wrap{width:100%;max-width:320px;height:14px;background:#2c1840aa;border-radius:8px;overflow:hidden;border:1px solid #6fb4ff44;box-shadow:inset 0 0 10px #00000088}
 #loading .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#ff8a1f,#ff5c00);transition:width .3s ease;box-shadow:0 0 15px #ff8a1faa}
 #loading .progress-text{font-size:13px;opacity:.7;letter-spacing:1px;font-family:monospace}
 #loading .progress-name{font-size:12px;opacity:.5;min-height:16px}
-
-/* Кнопка "Сменить имя" на экране блокировки */
-.btn-change-name{
-  margin-top:14px;background:transparent;color:#ff8a1f;border:1.5px solid #ff8a1f;
-  border-radius:10px;padding:9px 16px;font-size:13px;cursor:pointer;
-  font-family:inherit;transition:background .2s;
-}
-.btn-change-name:active{background:#ff8a1f22}
 </style>
 </head>
 <body>
 <div id="bg-spiral"></div>
 <div id="bg-overlay"></div>
 
-<!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loading">
   <div class="loading-pumpkin">🎃</div>
   <div class="loading-title">ЗАГРУЗКА...</div>
@@ -306,9 +291,6 @@ function setCurrentPlayer(name){
 function getCurrentPlayer(){
   try{return localStorage.getItem(CURRENT_KEY)}catch(e){return null}
 }
-function clearCurrentPlayer(){
-  try{localStorage.removeItem(CURRENT_KEY)}catch(e){}
-}
 
 function shakeScreen(strong=false){
   const app=document.getElementById("app");
@@ -397,19 +379,8 @@ function showLockedScreen(player){
       <div style="font-size:12px;opacity:.7;line-height:1.5;font-style:italic">
         ${ENDING_TEXT[player.relation]||""}
       </div>
-      <button class="btn-change-name" id="changeName">Сменить имя</button>
     </div>
   `;
-  // Обработчик "Сменить имя" — сбрасывает текущего игрока
-  setTimeout(()=>{
-    const btn=$("changeName");
-    if(btn){
-      btn.addEventListener("click",()=>{
-        clearCurrentPlayer();
-        location.reload();
-      });
-    }
-  },50);
 }
 
 /* ============================================================
