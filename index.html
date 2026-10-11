@@ -1,447 +1,385 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Pumpkin</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тыква — визуальная новелла</title>
 <style>
-  html, body {
-    margin: 0; padding: 0; height: 100%; overflow: hidden;
-    background: #0a0510;
-    touch-action: none; user-select: none;
-    -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
-  }
-  #dark-bg {
-    position: fixed; inset: 0;
-    background: radial-gradient(ellipse at center, #1a0b2e 0%, #0a0510 60%, #000 100%);
-    z-index: 0;
-  }
-
-  /* Воронка */
-  #swirl {
-    position: fixed; left: 50%; top: 50%;
-    width: 200vmax; height: 200vmax;
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    transition: opacity 0.7s ease;
-    z-index: 1; pointer-events: none;
-  }
-  #swirl.active { opacity: 1; }
-  #swirl svg {
-    width: 100%; height: 100%; display: block;
-    animation: spin 10s linear infinite;
-    transform-origin: 50% 50%;
-    filter: blur(1.5px);
-  }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-  #vignette {
-    position: fixed; inset: 0;
-    background: radial-gradient(circle at center,
-      rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.9) 100%);
-    pointer-events: none; z-index: 2;
-  }
-  #center-glow {
-    position: fixed; left: 50%; top: 50%;
-    width: 70vmin; height: 70vmin;
-    transform: translate(-50%,-50%);
-    background: radial-gradient(circle,
-      rgba(255,160,60,0.55) 0%,
-      rgba(180,60,255,0.25) 35%,
-      rgba(0,0,0,0) 70%);
-    opacity: 0; transition: opacity .7s ease;
-    z-index: 2; pointer-events: none; mix-blend-mode: screen;
-  }
-  #center-glow.active { opacity: 1; }
-
-  /* Тексты */
-  #top-text {
-    position: fixed;
-    left: 50%; top: 12%;
-    transform: translate(-50%, -20px);
-    font-family: "Georgia", "Times New Roman", serif;
-    font-size: clamp(20px, 5.5vw, 42px);
-    letter-spacing: 0.15em;
-    color: #ffffff;
-    text-shadow:
-      0 0 10px #fff,
-      0 0 25px #d8b8ff,
-      0 0 45px #8a4dd6;
-    opacity: 0;
-    transition: opacity 1.2s ease, transform 1.2s ease;
-    z-index: 5; pointer-events: none;
-    text-align: center;
-    white-space: nowrap;
-    font-style: italic;
-    font-weight: 300;
-  }
-  #top-text.show {
-    opacity: 0.95;
-    transform: translate(-50%, 0);
-  }
-
-  #bottom-text {
-    position: fixed;
-    left: 50%; bottom: 10%;
-    transform: translate(-50%, 20px);
-    font-family: "Georgia", "Times New Roman", serif;
-    font-size: clamp(11px, 2.6vw, 15px);
-    letter-spacing: 0.28em;
-    color: rgba(255,255,255,0.7);
-    text-shadow: 0 0 8px rgba(216,184,255,0.7);
-    opacity: 0;
-    transition: opacity 1.5s ease 0.4s, transform 1.5s ease 0.4s;
-    z-index: 5; pointer-events: none;
-    text-align: center;
-    text-transform: uppercase;
-    max-width: 90vw;
-    line-height: 1.6;
-  }
-  #bottom-text.show {
-    opacity: 0.75;
-    transform: translate(-50%, 0);
-  }
-
-  #stage {
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 3; cursor: pointer;
-  }
-  #pumpkin {
-    width: min(72vw, 520px); height: auto; pointer-events: none;
-    filter: drop-shadow(0 0 40px #ff8c00aa);
-    transition: transform 0.25s ease, filter 0.6s ease;
-    animation: float 4.5s ease-in-out infinite;
-    user-select: none; -webkit-user-drag: none;
-    transform-origin: center center;
-  }
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50%     { transform: translateY(-10px); }
-  }
-
-  #pumpkin.shake {
-    animation: shake 0.35s infinite;
-    filter: drop-shadow(0 0 60px #b388ff) drop-shadow(0 0 110px #ff7a00);
-  }
-  @keyframes shake {
-    0%   { transform: translate(0,0) rotate(0deg); }
-    10%  { transform: translate(-6px, 2px) rotate(-2deg); }
-    20%  { transform: translate(7px, -3px) rotate(2.5deg); }
-    30%  { transform: translate(-5px, 3px) rotate(-2deg); }
-    40%  { transform: translate(6px, -2px) rotate(2deg); }
-    50%  { transform: translate(-7px, 2px) rotate(-2.5deg); }
-    60%  { transform: translate(5px, -3px) rotate(1.8deg); }
-    70%  { transform: translate(-6px, 3px) rotate(-2.2deg); }
-    80%  { transform: translate(7px, -2px) rotate(2.3deg); }
-    90%  { transform: translate(-4px, 2px) rotate(-1.5deg); }
-    100% { transform: translate(0,0) rotate(0deg); }
-  }
-
-  #slice {
-    position: fixed; width: min(22vw, 170px);
-    left: 50%; top: 50%;
-    transform: translate(-50%,-50%) scale(0);
-    opacity: 0; pointer-events: none; z-index: 4;
-    will-change: transform, opacity;
-  }
-  #slice.fly { animation: fly 1.3s cubic-bezier(0.2,0.6,0.3,1) forwards; }
-  @keyframes fly {
-    0%   { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
-    100% { opacity: 0; transform: translate(120vw, -60vh) scale(0.4) rotate(900deg); }
-  }
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#120a1c; --bg2:#2a1236; --box:#1d1128;
+  --tx:#f4eaff; --pk:#ff8a1f; --us:#6fb4ff; --glow:#ffd27a;
+}
+html{height:100%;-webkit-text-size-adjust:100%}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  margin:0;height:100%;background:#2a1236;color:var(--tx);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;
+}
+#bg-spiral{
+  position:fixed;inset:-50%;width:200%;height:200%;z-index:-1;
+  background:repeating-radial-gradient(circle at 50% 50%,#6a1b9a 0px,#6a1b9a 30px,#ff7a00 30px,#ff7a00 60px);
+  animation:spin 40s linear infinite;opacity:.9;
+}
+#bg-overlay{
+  position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(circle at 50% 50%,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.85) 90%);
+  pointer-events:none;
+}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#app{height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto;padding:12px}
+#scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;position:relative}
+#pk{height:min(46vh,340px);max-width:92%;object-fit:contain;filter:drop-shadow(0 6px 14px #0008);animation:fl 3s ease-in-out infinite;transition:filter .3s,opacity .3s;opacity:.75}
+#pe{font-size:min(38vh,220px);line-height:1;display:none;animation:fl 3s ease-in-out infinite}
+#pk.on{filter:drop-shadow(0 0 28px var(--glow)) drop-shadow(0 0 50px #ff8a1f80);opacity:1}
+@keyframes fl{50%{transform:translateY(-8px)}}
+#me{position:absolute;left:4px;bottom:0;font-size:44px;opacity:.35;transition:.3s}
+#me.on{opacity:1;filter:drop-shadow(0 0 14px var(--us))}
+#box{background:#1d1128ee;border:2px solid var(--pk);border-radius:14px;padding:12px 16px 16px;min-height:140px;position:relative;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 0 30px #ff8a1f33, inset 0 0 20px #00000055;transition:border-color .3s, box-shadow .3s}
+#box.u{border-color:var(--us);box-shadow:0 0 30px #6fb4ff33, inset 0 0 20px #00000055}
+#nm{font-weight:700;color:var(--pk);margin-bottom:6px;font-size:15px;text-shadow:0 0 8px #ff8a1f80}
+#box.u #nm{color:var(--us);text-shadow:0 0 8px #6fb4ff80}
+#tx{font-size:18px;line-height:1.45;min-height:3em}
+#ar{position:absolute;right:12px;bottom:6px;color:var(--pk);animation:bl 1s infinite;display:none}
+@keyframes bl{50%{opacity:0}}
+#ch{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#ch button,.btn{background:#2c1840ee;color:var(--tx);border:1.5px solid var(--us);border-radius:12px;padding:12px 14px;font-size:16px;text-align:left;cursor:pointer;font-family:inherit;transition:background .2s, transform .1s, box-shadow .2s;box-shadow:0 0 15px #6fb4ff22}
+#ch button:active,.btn:active{background:#3b2358;transform:scale(0.98);box-shadow:0 0 25px #6fb4ff55}
+#end{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+#card{background:var(--box);border:2px solid #e33;border-radius:18px;padding:24px;text-align:center;max-width:420px;width:100%;box-shadow:0 0 40px #e33a, inset 0 0 30px #00000088;max-height:92vh;overflow-y:auto}
+#card h2{margin:0 0 6px;font-size:15px;font-weight:600;opacity:.8}
+#lab{font-size:30px;font-weight:800;margin:6px 0 14px;text-shadow:0 0 15px currentColor}
+#mt{display:flex;gap:6px;margin-bottom:16px}
+#mt i{flex:1;height:12px;border-radius:6px;background:#ffffff1f;transition:background .5s, box-shadow .5s}
+#ending-text{
+  font-size:14px;line-height:1.5;color:#f4eaffcc;
+  background:#2c184055;border-left:3px solid var(--pk);
+  padding:12px 14px;border-radius:8px;margin-bottom:16px;
+  text-align:left;font-style:italic;
+}
+.btn{text-align:center;width:100%}
+#start{position:fixed;inset:0;background:#120a1cee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;z-index:20;backdrop-filter:blur(4px);overflow-y:auto}
+#start h1{margin:0;font-size:28px}
+#start p{opacity:.7;margin:0;font-size:14px;line-height:1.5}
+.name-input{background:#2c1840ee;color:var(--tx);border:2px solid var(--us);border-radius:12px;padding:14px 16px;font-size:18px;font-family:inherit;width:100%;max-width:320px;text-align:center;outline:none;transition:border-color .3s, box-shadow .3s;box-shadow:0 0 15px #6fb4ff22}
+.name-input:focus{border-color:var(--pk);box-shadow:0 0 25px #ff8a1f55}
+.name-input::placeholder{color:#ffffff55}
+.btn-primary{background:linear-gradient(135deg, #ff8a1f, #ff5c00);color:#1d1128;font-weight:700;border:none;padding:14px 20px;border-radius:12px;font-size:17px;cursor:pointer;font-family:inherit;width:100%;max-width:320px;box-shadow:0 0 25px #ff8a1f66;transition:transform .1s, box-shadow .3s}
+.btn-primary:active{transform:scale(0.97);box-shadow:0 0 40px #ff8a1f99}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.save-status{font-size:12px;opacity:.6;text-align:center;max-width:320px;min-height:16px;transition:opacity .3s}
+.save-status.ok{color:#5d5;opacity:1}
+.save-status.err{color:#e33;opacity:1}
+.shake{animation:shake 0.4s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes shake{10%,90%{transform:translate3d(-2px,0,0)}20%,80%{transform:translate3d(4px,0,0)}30%,50%,70%{transform:translate3d(-6px,0,0)}40%,60%{transform:translate3d(6px,0,0)}}
+.shake-strong{animation:shake-strong 0.5s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes shake-strong{10%,90%{transform:translate3d(-4px,-2px,0)}20%,80%{transform:translate3d(8px,2px,0)}30%,50%,70%{transform:translate3d(-12px,-2px,0)}40%,60%{transform:translate3d(12px,2px,0)}}
+.locked-badge{display:inline-block;background:#e33;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
 </style>
 </head>
 <body>
-  <div id="dark-bg"></div>
-  <div id="swirl"><svg id="swirl-svg" viewBox="0 0 2000 2000" xmlns="http://www.w3.org/2000/svg"></svg></div>
-  <div id="center-glow"></div>
-  <div id="vignette"></div>
+<div id="bg-spiral"></div>
+<div id="bg-overlay"></div>
 
-  <div id="top-text">Ты Спас Его…</div>
-  <div id="bottom-text">Зови других участников,<br>нужно пробудить силу до конца</div>
+<div id="app">
+  <div id="scene">
+    <img id="pk" alt="Тыква">
+    <div id="pe">🎃</div>
+    <div id="me">👤</div>
+  </div>
+  <div id="box"><div id="nm"></div><div id="tx"></div><span id="ar">▼</span></div>
+  <div id="ch"></div>
+</div>
 
-  <div id="stage"><img id="pumpkin" alt=""></div>
-  <img id="slice" src="https://i.postimg.cc/NF89MqFL/pumpkin-slice.png" alt="">
+<div id="end">
+  <div id="card">
+    <h2>Диалог окончен. Отношение Тыквы к вам:</h2>
+    <div id="lab"></div>
+    <div id="mt"><i></i><i></i><i></i><i></i><i></i></div>
+    <div id="ending-text"></div>
+    <div class="save-status" id="saveStatus"></div>
+    <button class="btn" id="re" style="margin-top:14px">Пройти заново</button>
+  </div>
+</div>
 
-<script>
-/* ========== FIREBASE ========== */
-const SYNC_URL = "https://tulenoween-default-rtdb.firebaseio.com";
+<div id="start">
+  <img id="si" style="height:150px;filter:drop-shadow(0 6px 14px #0008)" alt="Тыква">
+  <h1>Тыква</h1>
+  <p id="startSub">Нажимай на текст, чтобы листать.<br>Выбирай реплики сам.</p>
+  <div id="lockedBox" style="display:none"></div>
+  <input type="text" id="nameInput" class="name-input" placeholder="Введи своё имя..." maxlength="20" autocomplete="off">
+  <button class="btn-primary" id="go" disabled>Начать</button>
+  <div class="save-status" id="startStatus"></div>
+</div>
 
-const STAGES = [
-  "https://i.postimg.cc/QCg9tGCW/pumpkin-1.png",
-  "https://i.postimg.cc/MH0MT2Hf/pumpkin-2.png",
-  "https://i.postimg.cc/cC7gHyCg/pumpkin-3.png",
-  "https://i.postimg.cc/hv8zjWvd/pumpkin-4.png",
-  "https://i.postimg.cc/yxhgd4x9/pumpkin-5.png"
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
+import { getDatabase, ref, push, set } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDatHxLZG-BeDTHjQ6hs0N2Kg6ZlZ-WcwU",
+  authDomain: "tykva-633a9.firebaseapp.com",
+  databaseURL: "https://tykva-633a9-default-rtdb.firebaseio.com",
+  projectId: "tykva-633a9",
+  storageBucket: "tykva-633a9.firebasestorage.app",
+  messagingSenderId: "303789270617",
+  appId: "1:303789270617:web:4a8e929cb95dd45d2e3348",
+  measurementId: "G-H2B4WLQ1WL"
+};
+
+let db = null;
+try{
+  const app = initializeApp(firebaseConfig);
+  db = getDatabase(app);
+  console.log("✓ Firebase подключён");
+} catch(e){
+  console.error("✗ Ошибка Firebase:", e);
+}
+
+/* ============================================================ */
+
+const P="p", U="u";
+const GREET=["Здравствуй, ничтожество","Еще один, да откуда вы лезете","Может, надо было вас в крыс превратить, чтобы вы меня не доставали?","Долго молчать будем?"];
+const BS="Не люблю говорить все по два раза, поэтому слушай внимательно! Я был таким же как они - этим склизким, мерзким существом - тюленем. Но им видите ли мой характер не нравился! «Тюленчики же добрые! Они не могут обижать себя и других» - говорили они. И в один из дней, из-за какой-то #%@₽# они меня схватили, привязали к стулу и... ОБРАТИЛИ МЕНЯ В ТЫКВУ! И скинули в это подземелье, чтобы меня никто не нашел... Но вы, глупенькие подростки, ищущие приключения на задницу, освободили меня! Теперь я расхреначу Тюленчиков, а потом и всех людей превращу в подчиняемых мне КУКОЛ ВУДУ!";
+const AFTER=[["А может у тебя мания величия? Я согласен с ними, все тюленчики должны быть позитивными и добрыми!","mania"],["Согласен с тобой, эти тюленчики еще те Твари!","agree"]];
+const OK=[["Че?","che"],["Ну ок","nok"]];
+const Q=[["Как тебе погода за окном?","wx"],["Ты актив или пассив?","ap"],["Тебе не кажется странным то, что 5-метровый Влад общается с 0,5-метровой Эвелиной?","vlad"]];
+const N={
+hi:{l:[[P,"Второй раз здороваться не буду, говори коротко и по делу!"]],c:[["Расколдуй Нас!","unspell"],["Ты нейросеть? Очень странно общаешься...","nn"],["Бебебе","bb"]]},
+unspell:{l:[[P,"Чтобы вы сбежали? Нет! Я еще не до конца осуществил свой план!"],[U,"Какой План?"],[P,"Мне нужно избавиться от этого... города Тюленчиков. Уж слишком все хорошо и сладко там!"]],c:[["А чем они тебе дорогу перешли? Тюленчики же вроде хорошие...","rant"],["Согласен с тобой, эти тюленчики еще те Твари!","agree"]]},
+rant:{l:[[P,"ОНИ?! ХОРОШИЕ?! ДА ТЫ ВООБЩЕ ЗНАЕШЬ ЧТО ОНИ ДЕЛАЮТ С ТЕМИ, КТО НЕ ПОДЧИНЯЕТСЯ ИМ?! А, точно... Ты же не проходишь АРГ.. Чувак, ты много теряешь!"],[U,"Так что случилось то?.."],[P,BS]],c:AFTER},
+nn:{l:[[P,"А у тебя диагноз «Аутизм»?"]],n:"bbu"},
+bbu:{l:[[U,"Бебебе"]],n:"bb"},
+bb:{l:[[P,"Ладно, мне все ясно..."]],c:OK},
+nok:{l:[],e:"Смешанное"},
+che:{l:[[P,"Ничего, просто понял что культурностью тут и не пахнет"],[U,"Ну вообще то я конкретный вопрос задал, ты нейросеть?"],[P,"Нет. Я не нейросеть."],[U,"А кто тогда?"],[P,"Меньше знаешь, крепче спишь!"]],c:[["Ну скажи!!! Мне правда интересно","say"],["Да пожалуйста!","dp"]]},
+dp:{l:[],e:"Недоверительное"},
+say:{l:[[P,"Решай в следующий раз АРГ, чтобы мне потом не пересказывать по два раза... Тюлень я, а меня обратили в тыкву"],[U,"А за что?...."],[P,BS]],c:AFTER},
+mania:{l:[[P,"ПОШЕЛ ОТСЮДА ВОН!"]],e:"Ужасное"},
+agree:{l:[[P,"А ты хоть что-то понимаешь... Ладно, ты заслужил каплю моего уважения!"]],c:[["Спасибо, о мой повелитель!!!","thx"],["А я то думал что ты типичный злодей злодейский!","villain"]]},
+villain:{l:[[P,"А я то думал что ты как эти, чокнутые. Есть в тебе капля души... О чем это я, ступай, может теперь у меня есть любимчик... Надеюсь ты не подумал, что это ты?"]],e:"Хорошее"},
+thx:{l:[[P,"А, ясно, ты такой же тупой как и твои дружки.. Как ты только додумался до предыдущего ответа?"],[U,"Прости, я не хотел"],[P,"Держать обиду не буду, я же не Ласковая Игривая Любимая Яблоня... Не понял? Ну значит ты не умеешь читать. Короче, не знаю что с тобой, но либо у тебя биполярка, либо ты очень любишь переобуваться... Странный ты типок"]],e:"Недоверительное"},
+rude:{l:[[P,"А тебе надо на блюдечке с бантиком и конфетти?"]],c:[["Ну да","ryes"],["Нет, просто относись с уважением!","rno"]]},
+ryes:{l:[[P,"Может мне ещё тебе жопу поцеловать?"],[U,"Спасибо, я не люблю кунилингус"],[P,"Да как ты смеешь?! Ты вообще знаешь кто я?"]],c:[["Да, ты неудачник!","loser"],["Нет","rnope"]]},
+loser:{l:[[P,"У меня не стальные нервы!!!"],[U,"Тыквенные?"],[P,"*Ударяет* Ты ничтожное простолюдинское смертное создание! У тебя нет мощи, нет власти, нет способностей! Да я могу тебя в крошку превратить…"],[U,"Так преврати"]],n:"conf"},
+rnope:{l:[[P,"Вот значит и гуляй лесом!"],[U,"Как гулять, если ты нас запер?"],[P,"Может хватит цепляться за слова?"],[U,"Может тогда отпустишь нас? Типо реал, а что мы сделаем тебе, раз ты такое великое существо?"]],n:"conf"},
+conf:{l:[[P,"*Растерянно*…"],[U,"Я ведь правильно понимаю, у тебя есть обида и ты пытаешься выместить её на нас?"],[P,"Нет у меня никакой обиды!"],[U,"Тогда почему ты нас не убил, раз ты так жесток?"],[P,"*Растерянно*…"]],e:"Смешанное"},
+rno:{l:[[P,"Я буду относиться так, как захочу, и не тыкай мне!"],[U,"На что обижен?"],[P,"Не на что, не люблю когда мне тыкают! Задавай свои вопросы и гуляй!"]],c:Q},
+wx:{l:[[P,"Ночь, кладбище… КАКАЯ #%*$ ПОГОДА? Если уж спрашиваешь, то спрашивай по делу"]],c:[Q[1],Q[2]]},
+vlad:{l:[[P,"Кстати да! Они даже в форме кукол Вуду смотрятся слишком контрастно! А ты шаришь…"],[U,"БТВ, у тебя есть теория почему Влад ВСЕГДА в желтой куртке? Все до сих пор гадают про это..."],[P,"Поговаривают, ту ночь с Тоджи он провел именно в этой куртке, из-за этого она впитала его запах и он хочет нюхать ее на постоянке!"],[U,"РЕАЛЬНО?"],[P,"Типо того… Эвелина кстати по такому же принципу рубашку носит…"],[U,"Так а с кем Тоджи сейчас?"],[P,"С Лилей…"],[U,"Я ВАЛЯЮСЬ"],[P,"Зай, я сам чуть на тыквенные семечки не распался, когда узнал это... Круто было посплетничать, но мне еще пустоголовых принимать надо... ОБЯЗАТЕЛЬНО ЖДУ ТЕБЯ ЗАВТРА!"]],e:"Бести"},
+ap:{l:[[P,"Ой бл#, ну а сам как думаешь?"]],c:[["Актив","act"],["Пассив","pas"]]},
+act:{l:[[P,"Мне считать это за комплимент? Спасибо. Но надеюсь мы больше не будем обсуждать сексуальные темы?"]],c:[["Ок, хорошо","okay"],["Еще как будем))","fb"]]},
+okay:{l:[[P,"Вот и отлично."]],e:"Недоверительное"},
+fb:{l:[[U,"Ты бы сделал обрезание за PS5?"],[P,"Ты бы лучше учил уроки. Иди-ка лучше ты отсюда, вегетофил"]],e:"Ужасное"},
+pas:{l:[[P,"Ах%#л? Да даже если пассив, я тыква в конце концов.... Неужели ты поощряешь людей, которые... Используют тыкву не по назначению?"],[U,"Так а если на природном плане смотреть? Когда всякие цветочки и пыльца?"],[P,"Ты бы лучше учил уроки. Иди-ка лучше ты отсюда, вегетофил"]],e:"Ужасное"},
+polite:{l:[[P,"О, а вот и мой «любимый» тип - Няшечки Вкусняшечки..."]],c:[["Эм, нет. Я просто вежливый, в отличии от некоторых.","pb"],["ДА СЕМПАЙ, Я ПОЛНОСТЬЮ ТВОЯ!!!","pa"]]},
+pb:{l:[[P,"Ну и что нужно этому «вежливому»?"],[U,"Миллион долларов и яхту"],[P,"Эх... Будь ты моим любимчиком мог бы и исполнить..."],[U,"РЕАЛЬНО?"],[P,"Ты типо так и не понял, что я могу реализовывать все, что только пожелаю?"],[U,"... [В мыслях] как стать его любимчиком?"],[P,"Ты уверен, что ты реально?"],[U,"В смысле?"],[P,"Да я как будто с Character.Ai пообщался.."],[U,"..."],[P,"Есть еще что сказать? Или опять в мыслях будешь летать?"],[U,"..."],[P,"Понятно, надеюсь ты завтра не вернешься..."]],e:"Ужасное"},
+pa:{l:[[P,"Ты давно был у врача?"],[U,"Нет, я был совсем недавно! Я захожу к нему и на весь кабинет «Охаешечки-Датебаешечки!»"],[P,"И что он сказал?"],[U,"Сказал, что у меня Переизбыток Аниме! Наруто! Кан-Сэ-Бёк!"],[P,"ХА! Я ТЕБЯ ПОЙМАЛ, НИКАКОЙ ТЫ НЕ АНИМЕШНИК! НАРУТО — ЯПОНСКОЕ АНИМЕ, А КАН-СЭ-БЁК ИЗ ДОРАМЫ ИГРА В КАЛЬМАРА!"],[U,"..."],[P,".... Забудь. Так что ты хотел от меня?"]],c:[["Уже ничего...","pa1"],["Я хочу... ПЕЧЕНЬКО!!!","pa2"]]},
+pa1:{l:[[P,"Отлично!..."]],e:"Смешанное"},
+pa2:{l:[[P,"...."]],e:"Недоверительное"}
+};
+
+const LV={"Ужасное":[1,"#e33"],"Недоверительное":[2,"#f90"],"Смешанное":[3,"#fd3"],"Хорошее":[4,"#5d5"],"Бести":[5,"#f6c"]};
+
+const ENDING_TEXT = {
+  "Ужасное": "Походу ты был слишком груб с тыквой. Или он слишком ранимый... Посмотрим, что будет дальше, возвращайся сюда на следующий день!",
+  "Недоверительное": "Ну... Это всяко лучше чем ужасное отношение... Попробуй с ним чуть нежнее в следующий раз, может быть у вас что-то да склеится",
+  "Смешанное": "Тыква явно не обозлен на тебя, но и не доверяет тебе... Но ты идешь в правильном направлении, так держать!",
+  "Хорошее": "Тыква явно доволен диалогом с тобой, ведь ты выделился от основной массы, быть может вы приближаетесь к статусу друзья?",
+  "Бести": "Не знаю как, но тебе удалось стать чуть ли не лучшими друзьями с тыквой. Сплетни любят все, главное поддерживай с ней положительный контакт!"
+};
+
+const IMG={
+  greet:"https://i.postimg.cc/XYBnMR93/FA875B24-F64E-4763-9A29-FCE909242FE7.png",
+  conf:"https://i.postimg.cc/T35T8znx/05953127-26C6-4D3D-BB77-4A225B9E6D8A.png",
+  slay:"https://i.postimg.cc/Vk0zyxnp/07ABE94A-48A1-4876-8E49-2C5F9B8F4F1F.png",
+  angry:"https://i.postimg.cc/8zfT82Mn/19D29FF4-3E9A-4DB5-AB60-5F621D18BFA2.png",
+  rage:"https://i.postimg.cc/x1N9rwMB/96AF9BD8-BE82-4883-914F-51F9D47BC728.png",
+  bored:"https://i.postimg.cc/QdKjL21R/B257CDFB-9193-4B1B-9030-260C5E1D3708.png",
+  disap:"https://i.postimg.cc/RZJvrkwz/BFC08DA7-8CD2-433A-8A98-93B1EF8DB627.png",
+  into:"https://i.postimg.cc/Nj2Qh3mb/IMG-4788.png"
+};
+const RULES=[
+  [/Растерянно|^\.{3,}/,"conf"],[/ПОШЕЛ ОТСЮДА|Ударяет/,"rage"],
+  [/блюдечке|диагноз|КАКАЯ|не стальные/,"angry"],
+  [/избавиться от этого|А, ясно|Вот значит|цепляться за слова/,"bored"],
+  [/Ладно, мне все ясно|Ничего, просто понял/,"disap"],
+  [/Кстати да/,"into"],[/Поговаривают|Типо того|С Лилей|Зай, я сам/,"slay"]
 ];
+function emo(t){for(const[r,e]of RULES)if(r.test(t))return e;return"greet"}
+Object.values(IMG).forEach(u=>{new Image().src=u});
 
-const LS_KEY   = "pumpkin_stage_v1";
-const USED_KEY = "pumpkin_used_v2";        // ← новая версия! старые "v1" не считаются
-const HOLD_TIME = 2500;
-const MAX_STAGE = STAGES.length - 1;
+const pk=document.getElementById("pk");
+pk.onerror=()=>{pk.style.display="none";document.getElementById("pe").style.display="block"};
+pk.onload=()=>{pk.style.display="";document.getElementById("pe").style.display="none"};
+pk.src=IMG.greet;
+document.getElementById("si").src=IMG.greet;
 
-const isUsed   = () => localStorage.getItem(USED_KEY) === "1";
-const markUsed = () => localStorage.setItem(USED_KEY, "1");
+const $=id=>document.getElementById(id);
+let q=[],cur=null,pend=null,typing=false,tm=null,full="";
+let currentPlayerName="",currentChoices=[];
 
-let currentStage = 0;
-let holding = false, holdStart = 0, holdRaf = null;
-
-const swirlEl      = document.getElementById("swirl");
-const swirlSvg     = document.getElementById("swirl-svg");
-const glowEl       = document.getElementById("center-glow");
-const pumpkinEl    = document.getElementById("pumpkin");
-const sliceEl      = document.getElementById("slice");
-const stageEl      = document.getElementById("stage");
-const topTextEl    = document.getElementById("top-text");
-const bottomTextEl = document.getElementById("bottom-text");
-
-/* ========== СПИРАЛЬ-ЛЕДЕНЕЦ ========== */
-(function buildSwirl() {
-  const SIZE = 2000, CX = SIZE/2, CY = SIZE/2;
-  const MAX_R = 1450, TURNS = 8, STEPS = 1600;
-  const SPACING = MAX_R / TURNS;
-  const STROKE_PURPLE = SPACING * 1.02;
-  const STROKE_ORANGE = SPACING * 0.55;
-  const purple = "#7b1fd1";
-  const orange = "#ff7a00";
-  const deep   = "#2a0047";
-
-  function armPath(angleOffset) {
-    let d = "";
-    for (let i = 0; i <= STEPS; i++) {
-      const t = i / STEPS;
-      const a = angleOffset + t * TURNS * Math.PI * 2;
-      const r = t * MAX_R;
-      const x = CX + Math.cos(a) * r;
-      const y = CY + Math.sin(a) * r;
-      d += (i === 0 ? "M" : "L") + x.toFixed(1) + "," + y.toFixed(1) + " ";
-    }
-    return d;
-  }
-
-  swirlSvg.innerHTML = `
-    <defs>
-      <radialGradient id="swirlShade" cx="50%" cy="50%" r="50%">
-        <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.18"/>
-        <stop offset="45%" stop-color="#ffffff" stop-opacity="0"/>
-        <stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>
-      </radialGradient>
-    </defs>
-    <rect width="${SIZE}" height="${SIZE}" fill="${deep}"/>
-    <path d="${armPath(0)}"          fill="none" stroke="${purple}"
-          stroke-width="${STROKE_PURPLE}" stroke-linecap="round"/>
-    <path d="${armPath(Math.PI)}"    fill="none" stroke="${orange}"
-          stroke-width="${STROKE_ORANGE}" stroke-linecap="round"/>
-    <rect width="${SIZE}" height="${SIZE}" fill="url(#swirlShade)"/>
-  `;
-})();
-
-/* ========== Стадии ========== */
-const GLOWS = ["#ff8c00", "#ffae00", "#ffc400", "#e0aaff", "#b388ff"];
-
-function applyStage(i, animate = true) {
-  if (i < 0) i = 0;
-  if (i > MAX_STAGE) i = MAX_STAGE;
-  currentStage = i;
-  pumpkinEl.src = STAGES[i];
-  pumpkinEl.style.filter = `drop-shadow(0 0 45px ${GLOWS[i]}aa)`;
-  if (animate) {
-    pumpkinEl.style.transform = "scale(1.18)";
-    setTimeout(() => { pumpkinEl.style.transform = ""; }, 220);
-  }
-  updateTexts();
-  updateAmbientState();
+/* ==== localStorage ==== */
+const PLAYED_KEY = "tykva_played_players";
+function getPlayedPlayers(){
+  try{const raw = localStorage.getItem(PLAYED_KEY);return raw ? JSON.parse(raw) : {}}
+  catch(e){return{}}
+}
+function savePlayedPlayer(name, relation, level){
+  const all = getPlayedPlayers();
+  all[name] = {name, relation, level, date: Date.now()};
+  try{localStorage.setItem(PLAYED_KEY, JSON.stringify(all))}
+  catch(e){console.warn("localStorage error:", e)}
+}
+function getPlayedPlayer(name){
+  const all = getPlayedPlayers();
+  return all[name] || null;
 }
 
-/* ===== Тексты — ТОЛЬКО если ЭТО устройство пробудило ===== */
-function updateTexts() {
-  if (!isUsed()) {
-    topTextEl.classList.remove("show");
-    bottomTextEl.classList.remove("show");
-    return;
-  }
-  topTextEl.classList.add("show");
-  if (currentStage < MAX_STAGE) {
-    bottomTextEl.classList.add("show");
-  } else {
-    bottomTextEl.classList.remove("show");
-  }
+function shakeScreen(strong=false){
+  const app=document.getElementById("app");
+  app.classList.remove("shake","shake-strong");void app.offsetWidth;
+  app.classList.add(strong?"shake-strong":"shake");
+  setTimeout(()=>app.classList.remove("shake","shake-strong"),500);
 }
-
-/* ===== Постоянные эффекты после пробуждения ===== */
-function updateAmbientState() {
-  if (!isUsed()) {
-    swirlEl.classList.remove("active");
-    glowEl.classList.remove("active");
-    glowEl.style.opacity = "";
-    swirlSvg.style.animationDuration = "10s";
-    pumpkinEl.classList.remove("shake");
-    return;
-  }
-
-  // Пробуждено — воронка остаётся навсегда
-  swirlEl.classList.add("active");
-  glowEl.classList.add("active");
-
-  if (currentStage >= MAX_STAGE) {
-    swirlSvg.style.animationDuration = "1.1s";
-    glowEl.style.opacity = "0.9";
-    pumpkinEl.classList.add("shake");
-  } else {
-    swirlSvg.style.animationDuration = "10s";
-    glowEl.style.opacity = "0.55";
-    pumpkinEl.classList.remove("shake");
-  }
+function type(who,text){
+  const u=who===U;$("box").className=u?"u":"";
+  $("nm").textContent=u?"Ты":"Тыква";
+  if(!u){pk.src=IMG[emo(text)];if(/Ударяет/.test(text))shakeScreen(true)}
+  pk.classList.toggle("on",!u);$("me").classList.toggle("on",u);
+  $("ar").style.display="none";full=text;let i=0;typing=true;$("tx").textContent="";
+  clearInterval(tm);tm=setInterval(()=>{i++;$("tx").textContent=text.slice(0,i);if(i>=text.length)fin()},28);
 }
-
-/* ========== Сохранение ========== */
-async function loadStage() {
-  let stage = parseInt(localStorage.getItem(LS_KEY) || "0", 10);
-  if (isNaN(stage)) stage = 0;
-
-  try {
-    const r = await fetch(SYNC_URL + "/stage.json", { cache: "no-store" });
-    const v = await r.json();
-    if (typeof v === "number") {
-      stage = v;
-      localStorage.setItem(LS_KEY, String(stage));
-    } else {
-      await saveStage(stage);
-    }
-  } catch (e) { console.warn("Cloud read error:", e); }
-
-  applyStage(stage, false);
-}
-
-async function saveStage(stage) {
-  localStorage.setItem(LS_KEY, String(stage));
-  try {
-    await fetch(SYNC_URL + "/stage.json", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(stage)
+function fin(){clearInterval(tm);typing=false;$("tx").textContent=full;$("ar").style.display="block"}
+function go(id){cur=N[id];q=cur.l.slice();next()}
+function next(){
+  if(typing){fin();return}
+  if($("ch").children.length||$("end").style.display==="flex")return;
+  if(q.length){const[w,t]=q.shift();type(w,t);return}
+  if(pend){const id=pend;pend=null;go(id);return}
+  if(cur.n){const id=cur.n;cur=Object.assign({},cur,{n:null});go(id);return}
+  if(cur.c){
+    $("ar").style.display="none";
+    cur.c.forEach(([t,id])=>{
+      const b=document.createElement("button");
+      b.textContent=t;
+      b.onclick=()=>{currentChoices.push(t);$("ch").innerHTML="";pend=id;q=[];type(U,t)};
+      $("ch").appendChild(b);
     });
-  } catch (e) { console.warn("Cloud write error:", e); }
+  }else if(cur.e){showEnding(cur.e)}
 }
 
-/* ========== Удержание ========== */
-function startHold(e) {
-  if (e) e.preventDefault();
-  if (holding) return;
-  if (isUsed()) return;
-  if (currentStage >= MAX_STAGE) return;
-  holding = true;
-  holdStart = performance.now();
-
-  // Воронка появляется целиком
-  swirlEl.classList.add("active");
-  glowEl.classList.add("active");
-
-  animateHold();
-}
-
-function animateHold() {
-  if (!holding) return;
-  const t = Math.min((performance.now() - holdStart) / HOLD_TIME, 1);
-
-  // Ускорение вращения (10s -> 0.6s)
-  const dur = 10 - t * 9.4;
-  swirlSvg.style.animationDuration = dur.toFixed(2) + "s";
-
-  pumpkinEl.style.transform = `scale(${1 + t * 0.15})`;
-  glowEl.style.opacity = (0.4 + t * 0.6).toFixed(2);
-
-  if (t >= 1) { finishHold(); return; }
-  holdRaf = requestAnimationFrame(animateHold);
-}
-
-function endHold() {
-  if (!holding) return;
-  holding = false;
-  cancelAnimationFrame(holdRaf);
-  pumpkinEl.style.transform = "";
-
-  // Если пробуждено — воронка остаётся. Если нет — гаснет.
-  updateAmbientState();
-}
-
-function finishHold() {
-  holding = false;
-  cancelAnimationFrame(holdRaf);
-
-  const next = Math.min(currentStage + 1, MAX_STAGE);
-  if (next === currentStage) { endHold(); return; }
-
-  markUsed();
-
-  sliceEl.classList.remove("fly");
-  void sliceEl.offsetWidth;
-  sliceEl.classList.add("fly");
-
-  setTimeout(() => {
-    applyStage(next, true);
-    saveStage(next);
-  }, 150);
-  setTimeout(endHold, 450);
-}
-
-/* ========== События ========== */
-stageEl.addEventListener("pointerdown", startHold);
-window.addEventListener("pointerup", endHold);
-window.addEventListener("pointercancel", endHold);
-window.addEventListener("pointerleave", endHold);
-stageEl.addEventListener("contextmenu", e => e.preventDefault());
-
-/* ========== СЕКРЕТНАЯ КНОПКА СБРОСА ==========
-   Быстро тапни 5 раз по верхнему левому углу экрана (100×100 px)
-   ============================================= */
-let tapCount = 0, tapTimer = null;
-document.addEventListener("click", (e) => {
-  if (e.clientX > 100 || e.clientY > 100) return;
-  tapCount++;
-  clearTimeout(tapTimer);
-  tapTimer = setTimeout(() => { tapCount = 0; }, 1200);
-
-  if (tapCount >= 5) {
-    tapCount = 0;
-    if (confirm("Сбросить прогресс тыквы?\n(локально и в облаке)")) {
-      // 1. Чистим localStorage
-      localStorage.removeItem("pumpkin_used_v1");
-      localStorage.removeItem("pumpkin_used_v2");
-      localStorage.removeItem("pumpkin_stage_v1");
-      // 2. Чистим Firebase
-      Promise.all([
-        fetch(SYNC_URL + "/stage.json", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: "0"
-        }),
-        fetch(SYNC_URL + "/awakenings.json", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: "0"
-        }).catch(() => {})  // если поля нет — не страшно
-      ]).finally(() => location.reload());
-    }
+async function sendToFirebase(name,relation,level,choices){
+  if(!db) return {ok:false,error:"Firebase не подключён"};
+  try{
+    const savesRef = ref(db, 'tykva_saves');
+    const newRef = push(savesRef);
+    await set(newRef, {name, relation, level, date: Date.now(), choices});
+    return {ok:true};
+  }catch(err){
+    console.error("Firebase ошибка:", err);
+    return {ok:false,error:err.message};
   }
-});
+}
 
-/* ========== Старт ========== */
-loadStage();
+async function showEnding(relation){
+  const[n,c]=LV[relation];
+  $("lab").textContent=relation;$("lab").style.color=c;
+  [...$("mt").children].forEach((s,i)=>{s.style.background=i<n?c:"";s.style.boxShadow=i<n?`0 0 10px ${c}`:""});
+  $("ending-text").textContent = ENDING_TEXT[relation] || "";
+  $("ending-text").style.borderLeftColor = c;
+  const st=$("saveStatus");st.textContent="Сохраняем...";st.className="save-status";
+  $("end").style.display="flex";
+  savePlayedPlayer(currentPlayerName, relation, n);
+  const result=await sendToFirebase(currentPlayerName,relation,n,currentChoices);
+  if(result.ok){st.textContent=`✓ Результат для «${currentPlayerName}» сохранён`;st.className="save-status ok"}
+  else{st.textContent=`⚠ Не сохранилось: ${result.error}`;st.className="save-status err"}
+}
 
-/* ========== Синхронизация ========== */
-setInterval(async () => {
-  if (holding) return;
-  try {
-    const r = await fetch(SYNC_URL + "/stage.json", { cache: "no-store" });
-    const v = await r.json();
-    if (typeof v === "number" && v !== currentStage) {
-      applyStage(v, true);
-      localStorage.setItem(LS_KEY, String(v));
+function begin(){
+  $("ch").innerHTML="";$("end").style.display="none";pend=null;currentChoices=[];
+  const g=GREET[Math.floor(Math.random()*GREET.length)];
+  cur={l:[],c:[["И тебе привет","hi"],["Че так грубо?!","rude"],["Простите, пожалуйста","polite"]]};
+  q=[[P,g]];next();
+}
+
+function showLockedScreen(player){
+  $("nameInput").style.display = "none";
+  $("go").style.display = "none";
+  $("startSub").style.display = "none";
+  const lb = $("lockedBox");
+  lb.style.display = "block";
+  const [n, c] = LV[player.relation] || [3, "#fd3"];
+  lb.innerHTML = `
+    <div class="locked-badge">Уже пройдено</div>
+    <div style="background:#1d1128ee;border:2px solid ${c};border-radius:14px;padding:16px 18px;max-width:340px;text-align:center;box-shadow:0 0 30px ${c}55;">
+      <div style="font-size:13px;opacity:.7;margin-bottom:6px">Твоё отношение с Тыквой:</div>
+      <div style="font-size:24px;font-weight:800;color:${c};margin-bottom:12px;text-shadow:0 0 12px ${c}aa">${player.relation}</div>
+      <div style="display:flex;gap:5px;margin-bottom:14px">
+        ${[1,2,3,4,5].map(i=>`<i style="flex:1;height:10px;border-radius:5px;background:${i<=n?c:'#ffffff22'};${i<=n?`box-shadow:0 0 8px ${c}`:''}"></i>`).join("")}
+      </div>
+      <div style="font-size:12px;opacity:.7;line-height:1.5;font-style:italic">
+        ${ENDING_TEXT[player.relation] || ""}
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   ОБРАБОТЧИКИ СОБЫТИЙ
+   ============================================================ */
+window.addEventListener("DOMContentLoaded", () => {
+  const nameInput = $("nameInput");
+  const goBtn = $("go");
+  const startStatus = $("startStatus");
+
+  nameInput.addEventListener("input", () => {
+    const v = nameInput.value.trim();
+    goBtn.disabled = v.length < 1;
+    startStatus.textContent = "";
+    startStatus.className = "save-status";
+  });
+
+  nameInput.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" && !goBtn.disabled) goBtn.click();
+  });
+
+  goBtn.addEventListener("click", () => {
+    currentPlayerName = nameInput.value.trim();
+    if(!currentPlayerName) return;
+
+    // проверяем, проходил ли уже
+    const played = getPlayedPlayer(currentPlayerName);
+    if(played){
+      showLockedScreen(played);
+      return;
     }
-  } catch (e) {}
-}, 5000);
+
+    $("start").style.display = "none";
+    begin();
+  });
+
+  // Кнопка "Пройти заново" в финале — блокирует повтор
+  $("re").addEventListener("click", () => {
+    const played = getPlayedPlayer(currentPlayerName);
+    if(played){
+      $("end").style.display = "none";
+      $("start").style.display = "flex";
+      showLockedScreen(played);
+    }
+  });
+
+  // Клик на диалоговое окно — пролистывание
+  $("box").addEventListener("click", next);
+
+  // Клик в любом месте экрана при показе концовки — тоже next
+  $("ch").addEventListener("click", (e) => {
+    if(e.target.tagName !== "BUTTON") next();
+  });
+});
 </script>
 </body>
 </html>
