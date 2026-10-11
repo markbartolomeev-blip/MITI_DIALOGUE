@@ -54,12 +54,7 @@ body{
 #lab{font-size:30px;font-weight:800;margin:6px 0 14px;text-shadow:0 0 15px currentColor}
 #mt{display:flex;gap:6px;margin-bottom:16px}
 #mt i{flex:1;height:12px;border-radius:6px;background:#ffffff1f;transition:background .5s, box-shadow .5s}
-#ending-text{
-  font-size:14px;line-height:1.5;color:#f4eaffcc;
-  background:#2c184055;border-left:3px solid var(--pk);
-  padding:12px 14px;border-radius:8px;margin-bottom:16px;
-  text-align:left;font-style:italic;
-}
+#ending-text{font-size:14px;line-height:1.5;color:#f4eaffcc;background:#2c184055;border-left:3px solid var(--pk);padding:12px 14px;border-radius:8px;margin-bottom:16px;text-align:left;font-style:italic}
 .btn{text-align:center;width:100%}
 #start{position:fixed;inset:0;background:#120a1cee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;z-index:20;backdrop-filter:blur(4px);overflow-y:auto}
 #start h1{margin:0;font-size:28px}
@@ -67,6 +62,10 @@ body{
 .name-input{background:#2c1840ee;color:var(--tx);border:2px solid var(--us);border-radius:12px;padding:14px 16px;font-size:18px;font-family:inherit;width:100%;max-width:320px;text-align:center;outline:none;transition:border-color .3s, box-shadow .3s;box-shadow:0 0 15px #6fb4ff22}
 .name-input:focus{border-color:var(--pk);box-shadow:0 0 25px #ff8a1f55}
 .name-input::placeholder{color:#ffffff55}
+.name-input.error{border-color:#e33;box-shadow:0 0 25px #e3355;animation:shake-input 0.4s}
+@keyframes shake-input{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}
+.name-hint{font-size:13px;color:#e33;opacity:0;transition:opacity .3s;min-height:16px;font-weight:600;text-shadow:0 0 8px #e3380}
+.name-hint.show{opacity:1}
 .btn-primary{background:linear-gradient(135deg, #ff8a1f, #ff5c00);color:#1d1128;font-weight:700;border:none;padding:14px 20px;border-radius:12px;font-size:17px;cursor:pointer;font-family:inherit;width:100%;max-width:320px;box-shadow:0 0 25px #ff8a1f66;transition:transform .1s, box-shadow .3s}
 .btn-primary:active{transform:scale(0.97);box-shadow:0 0 40px #ff8a1f99}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
@@ -78,11 +77,50 @@ body{
 .shake-strong{animation:shake-strong 0.5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes shake-strong{10%,90%{transform:translate3d(-4px,-2px,0)}20%,80%{transform:translate3d(8px,2px,0)}30%,50%,70%{transform:translate3d(-12px,-2px,0)}40%,60%{transform:translate3d(12px,2px,0)}}
 .locked-badge{display:inline-block;background:#e33;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
+
+/* ==== ЭКРАН ЗАГРУЗКИ ==== */
+#loading{
+  position:fixed;inset:0;background:#120a1c;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:24px;padding:24px;z-index:100;
+  text-align:center;
+}
+#loading .loading-title{
+  font-size:22px;font-weight:700;color:var(--pk);
+  text-shadow:0 0 15px #ff8a1f88;letter-spacing:2px;
+}
+#loading .loading-pumpkin{
+  font-size:70px;animation:fl 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 20px #ff8a1faa);
+}
+#loading .progress-wrap{
+  width:100%;max-width:320px;height:14px;background:#2c1840aa;
+  border-radius:8px;overflow:hidden;border:1px solid #6fb4ff44;
+  box-shadow:inset 0 0 10px #00000088;
+}
+#loading .progress-bar{
+  height:100%;width:0%;background:linear-gradient(90deg,#ff8a1f,#ff5c00);
+  transition:width .3s ease;box-shadow:0 0 15px #ff8a1faa;
+}
+#loading .progress-text{
+  font-size:13px;opacity:.7;letter-spacing:1px;font-family:monospace;
+}
+#loading .progress-name{
+  font-size:12px;opacity:.5;min-height:16px;
+}
 </style>
 </head>
 <body>
 <div id="bg-spiral"></div>
 <div id="bg-overlay"></div>
+
+<!-- ⬇️ ЭКРАН ЗАГРУЗКИ ⬇️ -->
+<div id="loading">
+  <div class="loading-pumpkin">🎃</div>
+  <div class="loading-title">ЗАГРУЗКА...</div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="progress-text" id="progressText">0%</div>
+  <div class="progress-name" id="progressName"></div>
+</div>
 
 <div id="app">
   <div id="scene">
@@ -105,12 +143,13 @@ body{
   </div>
 </div>
 
-<div id="start">
+<div id="start" style="display:none">
   <img id="si" style="height:150px;filter:drop-shadow(0 6px 14px #0008)" alt="Тыква">
   <h1>Тыква</h1>
   <p id="startSub">Нажимай на текст, чтобы листать.<br>Выбирай реплики сам.</p>
   <div id="lockedBox" style="display:none"></div>
   <input type="text" id="nameInput" class="name-input" placeholder="Введи своё имя..." maxlength="20" autocomplete="off">
+  <div class="name-hint" id="nameHint">Пожалуйста, укажи своё имя!</div>
   <button class="btn-primary" id="go" disabled>Начать</button>
   <div class="save-status" id="startStatus"></div>
 </div>
@@ -137,6 +176,75 @@ try{
   console.log("✓ Firebase подключён");
 } catch(e){
   console.error("✗ Ошибка Firebase:", e);
+}
+
+/* ============================================================
+   ЭМОЦИИ ТЫКВЫ (все картинки)
+   ============================================================ */
+const IMG={
+  greet:"https://i.postimg.cc/XYBnMR93/FA875B24-F64E-4763-9A29-FCE909242FE7.png",
+  conf:"https://i.postimg.cc/T35T8znx/05953127-26C6-4D3D-BB77-4A225B9E6D8A.png",
+  slay:"https://i.postimg.cc/Vk0zyxnp/07ABE94A-48A1-4876-8E49-2C5F9B8F4F1F.png",
+  angry:"https://i.postimg.cc/8zfT82Mn/19D29FF4-3E9A-4DB5-AB60-5F621D18BFA2.png",
+  rage:"https://i.postimg.cc/x1N9rwMB/96AF9BD8-BE82-4883-914F-51F9D47BC728.png",
+  bored:"https://i.postimg.cc/QdKjL21R/B257CDFB-9193-4B1B-9030-260C5E1D3708.png",
+  disap:"https://i.postimg.cc/RZJvrkwz/BFC08DA7-8CD2-433A-8A98-93B1EF8DB627.png",
+  into:"https://i.postimg.cc/Nj2Qh3mb/IMG-4788.png"
+};
+
+/* ============================================================
+   🚀 ПРЕДЗАГРУЗКА ВСЕХ КАРТИНОК С ПРОГРЕСС-БАРОМ
+   ============================================================ */
+const NAMES_FOR_LOAD = {
+  greet:"Приветствие",
+  conf:"Растерянность",
+  slay:"Сплетни",
+  angry:"Злость",
+  rage:"Ярость",
+  bored:"Скука",
+  disap:"Разочарование",
+  into:"Вовлечённость"
+};
+
+function preloadAllImages(){
+  const entries = Object.entries(IMG);
+  const total = entries.length;
+  let loaded = 0;
+  let failed = 0;
+  const progressBar = document.getElementById("progressBar");
+  const progressText = document.getElementById("progressText");
+  const progressName = document.getElementById("progressName");
+
+  return new Promise((resolve) => {
+    entries.forEach(([key, url]) => {
+      const img = new Image();
+      img.onload = () => {
+        loaded++;
+        updateProgress();
+      };
+      img.onerror = () => {
+        failed++;
+        loaded++;
+        console.warn("Не удалось загрузить:", url);
+        updateProgress();
+      };
+      img.src = url;
+      progressName.textContent = `Загрузка: ${NAMES_FOR_LOAD[key] || key}...`;
+
+      function updateProgress(){
+        const pct = Math.round((loaded / total) * 100);
+        progressBar.style.width = pct + "%";
+        progressText.textContent = pct + "%";
+        if(loaded >= total){
+          progressText.textContent = "100% — Готово!";
+          progressName.textContent = failed > 0
+            ? `Загружено ${total - failed} из ${total} (${failed} не удалось)`
+            : `Все ${total} эмоций загружены 🎃`;
+          setTimeout(resolve, 400);
+        }
+      }
+    });
+  });
 }
 
 /* ============================================================ */
@@ -192,16 +300,6 @@ const ENDING_TEXT = {
   "Бести": "Не знаю как, но тебе удалось стать чуть ли не лучшими друзьями с тыквой. Сплетни любят все, главное поддерживай с ней положительный контакт!"
 };
 
-const IMG={
-  greet:"https://i.postimg.cc/XYBnMR93/FA875B24-F64E-4763-9A29-FCE909242FE7.png",
-  conf:"https://i.postimg.cc/T35T8znx/05953127-26C6-4D3D-BB77-4A225B9E6D8A.png",
-  slay:"https://i.postimg.cc/Vk0zyxnp/07ABE94A-48A1-4876-8E49-2C5F9B8F4F1F.png",
-  angry:"https://i.postimg.cc/8zfT82Mn/19D29FF4-3E9A-4DB5-AB60-5F621D18BFA2.png",
-  rage:"https://i.postimg.cc/x1N9rwMB/96AF9BD8-BE82-4883-914F-51F9D47BC728.png",
-  bored:"https://i.postimg.cc/QdKjL21R/B257CDFB-9193-4B1B-9030-260C5E1D3708.png",
-  disap:"https://i.postimg.cc/RZJvrkwz/BFC08DA7-8CD2-433A-8A98-93B1EF8DB627.png",
-  into:"https://i.postimg.cc/Nj2Qh3mb/IMG-4788.png"
-};
 const RULES=[
   [/Растерянно|^\.{3,}/,"conf"],[/ПОШЕЛ ОТСЮДА|Ударяет/,"rage"],
   [/блюдечке|диагноз|КАКАЯ|не стальные/,"angry"],
@@ -210,13 +308,10 @@ const RULES=[
   [/Кстати да/,"into"],[/Поговаривают|Типо того|С Лилей|Зай, я сам/,"slay"]
 ];
 function emo(t){for(const[r,e]of RULES)if(r.test(t))return e;return"greet"}
-Object.values(IMG).forEach(u=>{new Image().src=u});
 
 const pk=document.getElementById("pk");
 pk.onerror=()=>{pk.style.display="none";document.getElementById("pe").style.display="block"};
 pk.onload=()=>{pk.style.display="";document.getElementById("pe").style.display="none"};
-pk.src=IMG.greet;
-document.getElementById("si").src=IMG.greet;
 
 const $=id=>document.getElementById(id);
 let q=[],cur=null,pend=null,typing=false,tm=null,full="";
@@ -309,6 +404,7 @@ function begin(){
 function showLockedScreen(player){
   $("nameInput").style.display = "none";
   $("go").style.display = "none";
+  $("nameHint").style.display = "none";
   $("startSub").style.display = "none";
   const lb = $("lockedBox");
   lb.style.display = "block";
@@ -335,34 +431,47 @@ window.addEventListener("DOMContentLoaded", () => {
   const nameInput = $("nameInput");
   const goBtn = $("go");
   const startStatus = $("startStatus");
+  const nameHint = $("nameHint");
 
+  // Показать/скрыть подсказку
   nameInput.addEventListener("input", () => {
     const v = nameInput.value.trim();
-    goBtn.disabled = v.length < 1;
+    if(v.length >= 1){
+      goBtn.disabled = false;
+      nameHint.classList.remove("show");
+      nameInput.classList.remove("error");
+    } else {
+      goBtn.disabled = true;
+    }
     startStatus.textContent = "";
     startStatus.className = "save-status";
+  });
+
+  // Если кликнул на кнопку с пустым именем — показать подсказку
+  goBtn.addEventListener("click", () => {
+    const v = nameInput.value.trim();
+    if(v.length < 1){
+      nameHint.classList.add("show");
+      nameInput.classList.add("error");
+      nameInput.focus();
+      setTimeout(() => nameInput.classList.remove("error"), 500);
+      return;
+    }
+    // ok — продолжаем
+    currentPlayerName = v;
+    const played = getPlayedPlayer(currentPlayerName);
+    if(played){
+      showLockedScreen(played);
+      return;
+    }
+    $("start").style.display = "none";
+    begin();
   });
 
   nameInput.addEventListener("keydown", (e) => {
     if(e.key === "Enter" && !goBtn.disabled) goBtn.click();
   });
 
-  goBtn.addEventListener("click", () => {
-    currentPlayerName = nameInput.value.trim();
-    if(!currentPlayerName) return;
-
-    // проверяем, проходил ли уже
-    const played = getPlayedPlayer(currentPlayerName);
-    if(played){
-      showLockedScreen(played);
-      return;
-    }
-
-    $("start").style.display = "none";
-    begin();
-  });
-
-  // Кнопка "Пройти заново" в финале — блокирует повтор
   $("re").addEventListener("click", () => {
     const played = getPlayedPlayer(currentPlayerName);
     if(played){
@@ -372,14 +481,24 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Клик на диалоговое окно — пролистывание
   $("box").addEventListener("click", next);
-
-  // Клик в любом месте экрана при показе концовки — тоже next
   $("ch").addEventListener("click", (e) => {
     if(e.target.tagName !== "BUTTON") next();
   });
 });
+
+/* ============================================================
+   🚀 ЗАПУСК: сначала грузим картинки, потом показываем старт
+   ============================================================ */
+(async () => {
+  await preloadAllImages();
+  // показываем экран старта, скрываем загрузку
+  $("loading").style.display = "none";
+  $("start").style.display = "flex";
+  // ставим первую эмоцию на оба экрана
+  pk.src = IMG.greet;
+  $("si").src = IMG.greet;
+})();
 </script>
 </body>
 </html>
