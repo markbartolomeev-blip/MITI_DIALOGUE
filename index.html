@@ -19,16 +19,11 @@ body{
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
   overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;
 }
-#bg-spiral{
-  position:fixed;inset:-50%;width:200%;height:200%;z-index:-1;
+#bg-spiral{position:fixed;inset:-50%;width:200%;height:200%;z-index:-1;
   background:repeating-radial-gradient(circle at 50% 50%,#6a1b9a 0px,#6a1b9a 30px,#ff7a00 30px,#ff7a00 60px);
-  animation:spin 40s linear infinite;opacity:.9;
-}
-#bg-overlay{
-  position:fixed;inset:0;z-index:-1;
-  background:radial-gradient(circle at 50% 50%,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.85) 90%);
-  pointer-events:none;
-}
+  animation:spin 40s linear infinite;opacity:.9}
+#bg-overlay{position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(circle at 50% 50%,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.85) 90%);pointer-events:none}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 #app{height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto;padding:12px}
 #scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;position:relative}
@@ -115,7 +110,6 @@ body{
     <div id="mt"><i></i><i></i><i></i><i></i><i></i></div>
     <div id="ending-text"></div>
     <div class="save-status" id="saveStatus"></div>
-    <button class="btn" id="re" style="margin-top:14px">Пройти заново</button>
   </div>
 </div>
 
@@ -132,7 +126,7 @@ body{
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
-import { getDatabase, ref, push, set } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js';
+import { getDatabase, ref, push, set, get, child } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDatHxLZG-BeDTHjQ6hs0N2Kg6ZlZ-WcwU",
@@ -267,31 +261,6 @@ const $=id=>document.getElementById(id);
 let q=[],cur=null,pend=null,typing=false,tm=null,full="";
 let currentPlayerName="",currentChoices=[];
 
-/* ============ localStorage ============ */
-const PLAYED_KEY = "tykva_played_players";
-const CURRENT_KEY = "tykva_current_player";
-
-function getPlayedPlayers(){
-  try{const raw=localStorage.getItem(PLAYED_KEY);return raw?JSON.parse(raw):{}}
-  catch(e){return{}}
-}
-function savePlayedPlayer(name,relation,level){
-  const all=getPlayedPlayers();
-  all[name]={name,relation,level,date:Date.now()};
-  try{localStorage.setItem(PLAYED_KEY,JSON.stringify(all))}
-  catch(e){console.warn("localStorage error:",e)}
-}
-function getPlayedPlayer(name){
-  const all=getPlayedPlayers();
-  return all[name]||null;
-}
-function setCurrentPlayer(name){
-  try{localStorage.setItem(CURRENT_KEY,name)}catch(e){}
-}
-function getCurrentPlayer(){
-  try{return localStorage.getItem(CURRENT_KEY)}catch(e){return null}
-}
-
 function shakeScreen(strong=false){
   const app=document.getElementById("app");
   app.classList.remove("shake","shake-strong");void app.offsetWidth;
@@ -325,17 +294,51 @@ function next(){
   }else if(cur.e){showEnding(cur.e)}
 }
 
+/* ==== Поиск игрока в Firebase по имени ==== */
+async function findPlayerInFirebase(name){
+  if(!db) return null;
+  try{
+    const safeName = name.replace(/[.#$\[\]\/]/g, "_");
+    const playerRef = ref(db, 'tykva_saves/' + safeName);
+    const snapshot = await get(playerRef);
+    if(snapshot.exists()){
+      return snapshot.val();
+    }
+    return null;
+  }catch(err){
+    console.error("Firebase ошибка чтения:", err);
+    return null;
+  }
+}
+
+/* ==== Запись/обновление результата в Firebase ==== */
 async function sendToFirebase(name,relation,level,choices){
   if(!db) return {ok:false,error:"Firebase не подключён"};
   try{
-    const savesRef=ref(db,'tykva_saves');
-    const newRef=push(savesRef);
-    await set(newRef,{name,relation,level,date:Date.now(),choices});
+    const safeName = name.replace(/[.#$\[\]\/]/g, "_");
+    const playerRef = ref(db, 'tykva_saves/' + safeName);
+    await set(playerRef, {name, relation, level, date: Date.now(), choices});
     return {ok:true};
   }catch(err){
-    console.error("Firebase ошибка:",err);
+    console.error("Firebase ошибка:", err);
     return {ok:false,error:err.message};
   }
+}
+
+function showEndingFromData(data){
+  const relation = data.relation;
+  const [n,c] = LV[relation] || [3,"#fd3"];
+  $("lab").textContent = relation;
+  $("lab").style.color = c;
+  [...$("mt").children].forEach((s,i)=>{
+    s.style.background = i<n ? c : "";
+    s.style.boxShadow = i<n ? `0 0 10px ${c}` : "";
+  });
+  $("ending-text").textContent = ENDING_TEXT[relation] || "";
+  $("ending-text").style.borderLeftColor = c;
+  $("saveStatus").textContent = `Это результат игрока «${data.name}»`;
+  $("saveStatus").className = "save-status ok";
+  $("end").style.display = "flex";
 }
 
 async function showEnding(relation){
@@ -346,7 +349,6 @@ async function showEnding(relation){
   $("ending-text").style.borderLeftColor=c;
   const st=$("saveStatus");st.textContent="Сохраняем...";st.className="save-status";
   $("end").style.display="flex";
-  savePlayedPlayer(currentPlayerName,relation,n);
   const result=await sendToFirebase(currentPlayerName,relation,n,currentChoices);
   if(result.ok){st.textContent=`✓ Результат для «${currentPlayerName}» сохранён`;st.className="save-status ok"}
   else{st.textContent=`⚠ Не сохранилось: ${result.error}`;st.className="save-status err"}
@@ -359,7 +361,7 @@ function begin(){
   q=[[P,g]];next();
 }
 
-function showLockedScreen(player){
+function showExistingResult(player){
   $("nameInput").style.display="none";
   $("go").style.display="none";
   $("nameHint").style.display="none";
@@ -368,7 +370,7 @@ function showLockedScreen(player){
   lb.style.display="block";
   const [n,c]=LV[player.relation]||[3,"#fd3"];
   lb.innerHTML=`
-    <div class="locked-badge">Уже пройдено</div>
+    <div class="locked-badge">Результат уже есть</div>
     <div style="background:#1d1128ee;border:2px solid ${c};border-radius:14px;padding:16px 18px;max-width:340px;text-align:center;box-shadow:0 0 30px ${c}55;">
       <div style="font-size:13px;opacity:.7;margin-bottom:6px">Привет, <b style="color:${c}">${player.name}</b>!</div>
       <div style="font-size:13px;opacity:.7;margin-bottom:6px">Твоё отношение с Тыквой:</div>
@@ -387,35 +389,12 @@ function showLockedScreen(player){
    ГЛАВНАЯ ЛОГИКА ЗАПУСКА
    ============================================================ */
 (async () => {
-  // 1. Грузим все картинки
   await preloadAllImages();
   $("loading").style.display = "none";
   pk.src = IMG.greet;
   $("si").src = IMG.greet;
+  $("start").style.display = "flex";
 
-  // 2. Проверяем — может, игрок уже вводил имя?
-  const saved = getCurrentPlayer();
-  if(saved){
-    currentPlayerName = saved;
-    const played = getPlayedPlayer(saved);
-    $("start").style.display = "flex";
-    if(played){
-      // уже доиграл → показать блокировку
-      showLockedScreen(played);
-    } else {
-      // вводил имя, но не доиграл → предзаполнить поле
-      const nameInput = $("nameInput");
-      nameInput.value = saved;
-      $("go").disabled = false;
-      $("nameHint").textContent = `Продолжаем, ${saved}?`;
-      $("nameHint").style.color = "#6fb4ff";
-    }
-  } else {
-    // первый раз → обычный старт
-    $("start").style.display = "flex";
-  }
-
-  // 3. Обработчики событий
   const nameInput = $("nameInput");
   const goBtn = $("go");
   const startStatus = $("startStatus");
@@ -426,10 +405,8 @@ function showLockedScreen(player){
     if(v.length >= 1){
       goBtn.disabled = false;
       nameHint.classList.remove("error");
-      if(!getCurrentPlayer()){
-        nameHint.textContent = "Указывай своё настоящее имя";
-        nameHint.style.color = "#ffffff66";
-      }
+      nameHint.textContent = "Указывай своё настоящее имя";
+      nameHint.style.color = "#ffffff66";
     } else {
       goBtn.disabled = true;
     }
@@ -437,7 +414,7 @@ function showLockedScreen(player){
     startStatus.className = "save-status";
   });
 
-  goBtn.addEventListener("click", () => {
+  goBtn.addEventListener("click", async () => {
     const v = nameInput.value.trim();
     if(v.length < 1){
       nameHint.textContent = "Пожалуйста, укажи своё имя!";
@@ -448,28 +425,30 @@ function showLockedScreen(player){
       return;
     }
     currentPlayerName = v;
-    setCurrentPlayer(currentPlayerName); // ← сохраняем сразу
 
-    const played = getPlayedPlayer(currentPlayerName);
-    if(played){
-      showLockedScreen(played);
-      return;
+    // Показываем индикатор "проверяем..."
+    goBtn.disabled = true;
+    goBtn.textContent = "Проверяем...";
+    startStatus.textContent = "Проверяем, есть ли ты в базе...";
+    startStatus.className = "save-status";
+
+    // Ищем игрока в Firebase
+    const existing = await findPlayerInFirebase(currentPlayerName);
+
+    if(existing){
+      // Уже есть результат — показываем его
+      showExistingResult(existing);
+    } else {
+      // Новый игрок — начинаем диалог
+      startStatus.textContent = "";
+      goBtn.textContent = "Начать";
+      $("start").style.display = "none";
+      begin();
     }
-    $("start").style.display = "none";
-    begin();
   });
 
   nameInput.addEventListener("keydown", (e) => {
     if(e.key === "Enter" && !goBtn.disabled) goBtn.click();
-  });
-
-  $("re").addEventListener("click", () => {
-    const played = getPlayedPlayer(currentPlayerName);
-    if(played){
-      $("end").style.display = "none";
-      $("start").style.display = "flex";
-      showLockedScreen(played);
-    }
   });
 
   $("box").addEventListener("click", next);
