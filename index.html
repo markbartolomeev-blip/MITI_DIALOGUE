@@ -147,8 +147,6 @@ const firebaseConfig = {
 
 /* ============================================================
    ⏰ ДЕДЛАЙН: 12 октября 2026, 19:00
-   Все, кто играл ДО этой даты → получают вторую попытку
-   Все, кто играл ПОСЛЕ → блокируются
    ============================================================ */
 const DEADLINE = new Date("2026-10-12T19:00:00").getTime();
 
@@ -159,6 +157,31 @@ try{
   console.log("✓ Firebase подключён");
 } catch(e){
   console.error("✗ Ошибка Firebase:", e);
+}
+
+/* ============================================================
+   LOCALSTORAGE v3 — старые ключи игнорируются, все получают вторую попытку
+   ============================================================ */
+const LS_PLAYED_KEY = "tykva_played_v3";
+
+function getLocalPlayers(){
+  try{
+    const raw = localStorage.getItem(LS_PLAYED_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+
+function saveLocalPlayer(name, relation, level){
+  const all = getLocalPlayers();
+  all[name] = { name, relation, level, date: Date.now() };
+  try{
+    localStorage.setItem(LS_PLAYED_KEY, JSON.stringify(all));
+  }catch(e){ console.warn("localStorage error:", e); }
+}
+
+function getLocalPlayer(name){
+  const all = getLocalPlayers();
+  return all[name] || null;
 }
 
 const IMG={
@@ -274,27 +297,19 @@ const $=id=>document.getElementById(id);
 let q=[],cur=null,pend=null,typing=false,tm=null,full="";
 let currentPlayerName="",currentChoices=[];
 
-/* ============================================================
-   НОРМАЛИЗАЦИЯ ИМЕНИ: "влад"/"ВЛАД"/"вЛаД" → "Влад"
-   ============================================================ */
 function normalizeName(name){
   const trimmed = (name || "").trim();
   if(!trimmed) return "";
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
 }
 
-/* ============================================================
-   ЧТЕНИЕ ЗАПИСИ ИЗ FIREBASE
-   ============================================================ */
 async function findPlayerInFirebase(name){
   if(!db) return null;
   try{
     const safeName = name.replace(/[.#$\[\]\/]/g, "_");
     const playerRef = ref(db, 'tykva_saves/' + safeName);
     const snapshot = await get(playerRef);
-    if(snapshot.exists()){
-      return snapshot.val();
-    }
+    if(snapshot.exists()) return snapshot.val();
     return null;
   }catch(err){
     console.error("Firebase ошибка чтения:", err);
@@ -302,9 +317,6 @@ async function findPlayerInFirebase(name){
   }
 }
 
-/* ============================================================
-   ЗАПИСЬ РЕЗУЛЬТАТА В FIREBASE
-   ============================================================ */
 async function sendToFirebase(name,relation,level,choices){
   if(!db) return {ok:false,error:"Firebase не подключён"};
   try{
@@ -359,9 +371,14 @@ async function showEnding(relation){
   $("ending-text").style.borderLeftColor=c;
   const st=$("saveStatus");st.textContent="Сохраняем...";st.className="save-status";
   $("end").style.display="flex";
+
+  // Сохраняем в localStorage v3 (мгновенно, для блокировки)
+  saveLocalPlayer(currentPlayerName, relation, n);
+
+  // Параллельно в Firebase
   const result=await sendToFirebase(currentPlayerName,relation,n,currentChoices);
   if(result.ok){st.textContent=`✓ Результат для «${currentPlayerName}» сохранён`;st.className="save-status ok"}
-  else{st.textContent=`⚠ Не сохранилось: ${result.error}`;st.className="save-status err"}
+  else{st.textContent=`✓ Сохранено локально (Firebase недоступен)`;st.className="save-status ok"}
 }
 
 function begin(){
@@ -414,7 +431,6 @@ function showExistingResult(player){
   const startStatus = $("startStatus");
   const nameHint = $("nameHint");
 
-  // Ввод имени
   nameInput.addEventListener("input", () => {
     const v = nameInput.value.trim();
     goBtn.disabled = v.length < 1;
@@ -428,7 +444,6 @@ function showExistingResult(player){
     if(e.key === "Enter" && !goBtn.disabled) goBtn.click();
   });
 
-  // Кнопка "Начать" — показываем подтверждение
   goBtn.addEventListener("click", () => {
     const v = nameInput.value.trim();
     if(v.length < 1){
@@ -439,9 +454,7 @@ function showExistingResult(player){
       setTimeout(() => nameInput.classList.remove("error"), 500);
       return;
     }
-
     const normalized = normalizeName(v);
-    // Показываем подтверждение
     nameHint.innerHTML = `Тебя зовут <b>«${normalized}»</b>?`;
     nameHint.className = "name-hint confirm";
     nameInput.style.display = "none";
@@ -450,36 +463,35 @@ function showExistingResult(player){
     confirmNo.style.display = "block";
   });
 
-  // Кнопка "Да, всё верно" — начинаем игру
   confirmYes.addEventListener("click", async () => {
     currentPlayerName = normalizeName(nameInput.value);
 
-    // Меняем текст на "проверяем..."
     confirmYes.disabled = true;
     confirmYes.textContent = "Проверяем...";
-    startStatus.textContent = "Проверяем твоё имя в базе...";
+    startStatus.textContent = "Проверяем твоё имя...";
     startStatus.className = "save-status";
 
-    // Ищем запись в Firebase
-    const existing = await findPlayerInFirebase(currentPlayerName);
-    const now = Date.now();
+    // 1. localStorage v3 — мгновенно
+    const localPlayer = getLocalPlayer(currentPlayerName);
 
-    if(existing){
-      // Уже играл — смотрим на дату
-      if(existing.date >= DEADLINE){
-        // Играл ПОСЛЕ дедлайна → блокируем
-        showExistingResult(existing);
-        return;
-      }
-      // Играл ДО дедлайна → даём вторую попытку, продолжаем игру
+    if(localPlayer && localPlayer.date >= DEADLINE){
+      showExistingResult(localPlayer);
+      return;
     }
 
-    // Начинаем игру
+    // 2. Firebase — на случай другого устройства
+    const fbPlayer = await findPlayerInFirebase(currentPlayerName);
+
+    if(fbPlayer && fbPlayer.date >= DEADLINE){
+      showExistingResult(fbPlayer);
+      return;
+    }
+
+    // Ничего блокирующего не нашли → играем
     $("start").style.display = "none";
     begin();
   });
 
-  // Кнопка "Нет, изменить" — возвращаемся к вводу
   confirmNo.addEventListener("click", () => {
     nameHint.textContent = "Указывай своё настоящее имя";
     nameHint.className = "name-hint";
