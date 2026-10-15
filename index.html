@@ -19,8 +19,6 @@ body{
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
   overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;
 }
-
-/* ФОН */
 #vx{position:fixed;inset:0;overflow:hidden;z-index:0;background:radial-gradient(circle at 50% 45%,#6b55d6,#241a78 55%,#0b0733)}
 #vx svg{position:absolute;left:50%;top:50%;width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;animation:spin 50s linear infinite;opacity:.85}
 #vx::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,#ffffffcc 0,#d9ccff88 6%,#8fb4ff33 22%,#0000 45%);animation:pulse 4s ease-in-out infinite}
@@ -28,7 +26,6 @@ body{
 @keyframes pulse{50%{opacity:.55;transform:scale(1.15)}}
 @media(prefers-reduced-motion:reduce){#vx svg,#vx::after{animation:none}}
 
-/* ИНТЕРФЕЙС */
 #app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto;padding:12px}
 #scene{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative}
 #pk{height:min(46vh,340px);max-width:92%;object-fit:contain;filter:drop-shadow(0 6px 14px #000);animation:fl 3s ease-in-out infinite;transition:filter .3s,opacity .3s;opacity:.7}
@@ -36,13 +33,8 @@ body{
 #pe{font-size:min(38vh,220px);display:none;animation:fl 3s ease-in-out infinite}
 @keyframes fl{50%{transform:translateY(-8px)}}
 #pk.run{animation:none;transform:translateX(130vw);transition:transform 1.1s ease-in}
+#bd{position:absolute;top:0;left:0;font-size:14px;font-weight:700;padding:5px 12px;border-radius:20px;border:1.5px solid;background:#000a}
 
-#bd{
-  position:absolute;top:0;left:0;font-size:14px;font-weight:700;
-  padding:5px 12px;border-radius:20px;border:1.5px solid;background:#000a;
-}
-
-/* ХРУСТАЛЬНЫЙ ШАР */
 #ball{position:absolute;left:0;right:0;margin:0 auto;bottom:0;width:min(27vh,150px);aspect-ratio:200/230;display:none;animation:fl 2.4s ease-in-out infinite}
 #ball svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 #bin{position:absolute;left:9%;top:5.65%;width:82%;height:71.3%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 40% 35%,#8d63d8,#3a1a78 55%,#170a38);display:flex;align-items:center;justify-content:center}
@@ -67,7 +59,6 @@ body{
 #binfo{position:absolute;top:6px;right:8px;width:30px;height:30px;font-size:16px;background:#2c1840;border:1.5px solid #888;border-radius:50%;cursor:pointer;padding:0;display:none}
 #bhint{position:absolute;right:0;bottom:calc(100% + 6px);max-width:85%;background:#2a1840;border:1.5px solid #888;border-radius:10px;padding:8px 12px;font-size:14px;font-style:italic;color:#ddd;display:none;z-index:5}
 
-/* ДИАЛОГ */
 #box{background:#160d20;border:2px solid var(--pk);border-radius:14px;padding:12px 16px 18px;min-height:140px;position:relative;cursor:pointer}
 #box.u{border-color:var(--us)}
 #box.n,#box.a{border-color:#777}
@@ -85,7 +76,6 @@ body{
 .row{position:relative}
 .row button{width:100%;padding-right:44px}
 
-/* ЭКРАН ЗАГРУЗКИ */
 #loading{
   position:fixed;inset:0;background:#0b0733;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:22px;padding:24px;z-index:50;text-align:center;
@@ -96,7 +86,6 @@ body{
 #loading .pbar{height:100%;width:0%;background:linear-gradient(90deg,#ff8a1f,#ff5c00);transition:width .25s ease;box-shadow:0 0 15px #ff8a1faa}
 #loading .ptext{font-size:13px;opacity:.7;letter-spacing:1px;font-family:monospace}
 
-/* СТАРТ */
 #start{
   position:fixed;inset:0;z-index:20;background:#0b0733ee;
   display:none;flex-direction:column;align-items:center;justify-content:center;
@@ -134,7 +123,6 @@ body{
 .save-status.ok{color:#5d5;opacity:1}
 .save-status.err{color:#e33;opacity:1}
 
-/* НЕ НАЙДЕН */
 #notFound{
   position:fixed;inset:0;z-index:40;background:#0b0733ee;
   display:none;flex-direction:column;align-items:center;justify-content:center;
@@ -145,39 +133,23 @@ body{
 #notFound p{opacity:.8;margin:0;max-width:340px;font-size:14px;line-height:1.6}
 #notFound .small{opacity:.55;font-size:12px;margin-top:8px}
 
-/* УЖЕ ПРОШЁЛ */
 #alreadyPlayed{
   position:fixed;inset:0;z-index:40;background:#0b0733ee;
   display:none;flex-direction:column;align-items:center;justify-content:center;
   gap:16px;padding:24px;text-align:center;backdrop-filter:blur(6px);
+  overflow-y:auto;
 }
-#alreadyPlayed h2{color:#ff8a1f;font-size:20px;margin:0;text-shadow:0 0 15px #ff8a1f88}
+#alreadyPlayed h2{color:#ff8a1f;font-size:22px;margin:0;text-shadow:0 0 15px #ff8a1f88}
 #alreadyPlayed .relCard{
-  background:#1d1128ee;border:2px solid;border-radius:14px;padding:16px 20px;
-  max-width:340px;width:100%;text-align:center;
+  background:#1d1128ee;border:2px solid;border-radius:16px;padding:20px 24px;
+  max-width:360px;width:100%;text-align:center;
 }
-#alreadyPlayed .relLabel{font-size:13px;opacity:.7;margin-bottom:6px}
-#alreadyPlayed .relName{font-size:24px;font-weight:800;margin-bottom:12px;text-shadow:0 0 12px currentColor}
-#alreadyPlayed .bars{display:flex;gap:5px;margin-bottom:14px}
-#alreadyPlayed .bars i{flex:1;height:10px;border-radius:5px;background:#ffffff22}
-#alreadyPlayed .etext{font-size:12px;opacity:.75;line-height:1.5;font-style:italic}
-#alreadyPlayed .badge{display:inline-block;background:#e33;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
-
-/* ФИНАЛ */
-#ending{
-  position:fixed;inset:0;background:#000d;display:none;
-  align-items:center;justify-content:center;padding:20px;z-index:30;
-}
-#ecard{
-  background:#1d1128;border:2px solid #e33;border-radius:18px;padding:24px;
-  text-align:center;max-width:420px;width:100%;
-  box-shadow:0 0 40px #e33a, inset 0 0 30px #00000088;
-  max-height:92vh;overflow-y:auto;
-}
-#ecard h2{margin:0 0 6px;font-size:15px;font-weight:600;opacity:.8}
-#elab{font-size:28px;font-weight:800;margin:6px 0 14px;text-shadow:0 0 15px currentColor}
-#etext{font-size:14px;line-height:1.5;color:#f4eaffcc;background:#2c184055;border-left:3px solid #e33;padding:12px 14px;border-radius:8px;margin-bottom:16px;text-align:left;font-style:italic}
-#ecard .btn{background:linear-gradient(135deg,#ff8a1f,#ff5c00);color:#1d1128;font-weight:700;border:none;padding:14px;text-align:center;border-radius:12px;width:100%}
+#alreadyPlayed .relLabel{font-size:13px;opacity:.7;margin-bottom:8px}
+#alreadyPlayed .relName{font-size:28px;font-weight:800;margin-bottom:14px;text-shadow:0 0 15px currentColor}
+#alreadyPlayed .bars{display:flex;gap:5px;margin-bottom:16px}
+#alreadyPlayed .bars i{flex:1;height:12px;border-radius:6px;background:#ffffff22}
+#alreadyPlayed .etext{font-size:13px;opacity:.8;line-height:1.55;font-style:italic;text-align:left;padding:10px 12px;background:#2c184055;border-left:3px solid;border-radius:8px}
+#alreadyPlayed .badge{display:inline-block;background:#e33;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:8px;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -275,21 +247,10 @@ body{
   </div>
 </div>
 
-<!-- ФИНАЛ -->
-<div id="ending">
-  <div id="ecard">
-    <h2>Диалог окончен. Отношение Тыквы к вам:</h2>
-    <div id="elab"></div>
-    <div id="etext"></div>
-    <button class="btn" id="endBtn">Пройти заново</button>
-  </div>
-</div>
-
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js';
 
-/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyDatHxLZG-BeDTHjQ6hs0N2Kg6ZlZ-WcwU",
   authDomain: "tykva-633a9.firebaseapp.com",
@@ -305,12 +266,15 @@ try{
   console.log("✓ Firebase готов");
 }catch(e){console.error("✗ Firebase:",e)}
 
-/* СПЕЦ-КОД */
 const TEST_NAME="ЛиляТест";
 let isTestMode=false;
 
-/* LOCALSTORAGE */
+/* ============================================================
+   LOCALSTORAGE
+   ============================================================ */
 const LS_PART2_KEY="tykva_part2_played_v1";
+const LS_CURRENT_KEY="tykva_part2_current_player";
+
 function getPart2Players(){
   try{
     const raw=localStorage.getItem(LS_PART2_KEY);
@@ -320,11 +284,19 @@ function getPart2Players(){
 function savePart2Player(name,relation,level){
   const all=getPart2Players();
   all[name]={name,relation,level,date:Date.now()};
-  try{localStorage.setItem(LS_PART2_KEY,JSON.stringify(all))}catch(e){}
+  try{localStorage.setItem(LS_PART2_KEY,JSON.stringify(all));
+    console.log("💾 Сохранено в localStorage:",name,relation);
+  }catch(e){console.error("localStorage save error:",e)}
 }
 function getPart2Player(name){
   const all=getPart2Players();
   return all[name]||null;
+}
+function setCurrentPlayer(name){
+  try{localStorage.setItem(LS_CURRENT_KEY,name)}catch(e){}
+}
+function getCurrentPlayer(){
+  try{return localStorage.getItem(LS_CURRENT_KEY)}catch(e){return null}
 }
 
 /* КАРТИНКИ */
@@ -339,7 +311,7 @@ const E={
   scared:B+"05CTtK3y/IMG-4895.png",
   disap:B+"05CTtK3y/IMG-4895.png"
 };
-const MASK="https://i.postimg.cc/KYVRKvBB/IMG-1588.jpg";
+const MASK="https://i.ibb.co/Mx4ZyQSg/IMG-1588.jpg";
 const EMPIRE_IMG="https://i.postimg.cc/zG2k5GnB/IMG-4901.jpg";
 const START_PUMPKIN="https://i.postimg.cc/XYBnMR93/FA875B24-F64E-4763-9A29-FCE909242FE7.png";
 const NAMES={greet:"Приветствие",happy:"Довольный",unhappy:"Недовольный",smile:"Улыбающийся",arrogant:"Надменный",fortune:"Гадающий",scared:"Испуганно злой",disap:"Разочарованный"};
@@ -373,7 +345,6 @@ function preload(){
   });
 }
 
-/* ОТНОШЕНИЕ */
 const LEVELS={
   "Ужасное":{n:1,c:"#e33"},
   "Недоверительное":{n:2,c:"#f90"},
@@ -393,7 +364,6 @@ function setRelation(level){
   bd.style.borderColor=LEVELS[level].c;
 }
 
-/* ГРАФ */
 const EM={
   "приветствие":"greet","приветственная":"greet",
   "довольный":"happy","недовольный":"unhappy",
@@ -440,7 +410,6 @@ event:{l:["<В шаре летают туда-сюда новогодние ел
 arg:{l:["<В шаре очень быстро меняются картинки https://s.fotora.ru/d7d42c759ccb06ce.jpeg https://s.fotora.ru/7ffb18bb03e18845.jpeg>","🎃[Гадающий] Не знаю, что это значит, но взглянем.... {Отношение изменилось на хорошее}","🎃[Гадающий] Вижу... 202...7.. 2027! А больше ничего не видно... Но я вижу ещё... Кто этот мальчик?... Ледяная вечеринка?...","🎃[Испуганно злой] Нет... Это же ведь не... УХОДИ! ТЕБЕ НУЖНО ПОКИНУТЬ ЭТО МЕСТО!","<Шар ломается, тыква сбегает>"],e:1}
 };
 
-/* КОНЦОВКИ */
 const ENDING_TEXT={
   "Ужасное":"Жаль, но ты так и не добился хороших отношений с Тыквой. Печально, но может это будет уроком что не нужно быть таким грубым?",
   "Недоверительное":"Эх, а ведь у тебя были шансы подружиться с тыквой. Благо, что он хотя бы не ненавидит. Не ненавидит. Что это за словосочетание? Короче жаль, удачи в других мини-играх",
@@ -449,7 +418,6 @@ const ENDING_TEXT={
   "Отличное":"ЧЕЕЕЕ. Ну ты реально босс. Кому-то обеспечен гарантированный билет в «Зомби-Лотерея»)"
 };
 
-/* ФОН */
 (function(){
   const C=["#cdbdff","#4f9cff","#a493ff","#7cc0ff","#e0d6ff","#3f7bf0"],n=6;
   let d='<svg viewBox="-500 -500 1000 1000" preserveAspectRatio="xMidYMid slice"><defs><filter id="vb"><feGaussianBlur stdDeviation="4"/></filter></defs><g filter="url(#vb)" fill="none" stroke-linecap="round">';
@@ -464,7 +432,6 @@ const ENDING_TEXT={
   document.getElementById("vx").innerHTML=d+"</g></svg>";
 })();
 
-/* СОСТОЯНИЕ */
 const $=id=>document.getElementById(id);
 const pk=$("pk");
 pk.onerror=()=>{pk.style.display="none";$("pe").style.display="block"};
@@ -597,7 +564,7 @@ function next(){
   }
 }
 
-/* ============ УЖЕ ПРОШЁЛ ============ */
+/* ============ "УЖЕ ПРОШЁЛ" ============ */
 function showAlreadyPlayed(data){
   $("start").style.display="none";
   $("notFound").style.display="none";
@@ -613,7 +580,9 @@ function showAlreadyPlayed(data){
     s.style.background=i<L.n?L.c:"#ffffff22";
     s.style.boxShadow=i<L.n?`0 0 8px ${L.c}`:"";
   });
-  $("apText").textContent=ENDING_TEXT[data.relation]||"";
+  const txt=$("apText");
+  txt.textContent=ENDING_TEXT[data.relation]||"";
+  txt.style.borderLeftColor=L.c;
   $("alreadyPlayed").style.display="flex";
 }
 
@@ -626,15 +595,14 @@ function showEnding(){
   $("etext").style.borderLeftColor=L.c;
   $("ending").style.display="flex";
 
-  // Всегда пишем в localStorage (блокировка работает и для теста)
+  // ВСЕГДА сохраняем в localStorage (для блокировки)
   savePart2Player(currentPlayer,currentRelation,L.n);
 
-  // В Firebase — только если не тестовый режим
+  // В Firebase — только если не тест
   if(isTestMode){
-    console.log("🧪 Тестовый режим — в Firebase не сохраняем");
+    console.log("🧪 Тест — в Firebase не пишем");
     return;
   }
-
   if(db && currentPlayer){
     const safe=currentPlayer.replace(/[.#$\[\]\/]/g,"_");
     set(ref(db,'tykva_saves/'+safe),{
@@ -643,12 +611,12 @@ function showEnding(){
       level:L.n,
       date:Date.now(),
       part:2
-    }).then(()=>console.log("✓ Часть 2 сохранена"))
-    .catch(e=>console.error("Ошибка:",e));
+    }).then(()=>console.log("✓ Часть 2 в Firebase"))
+    .catch(e=>console.error("Firebase err:",e));
   }
 }
 
-/* ============ СБРОС ============ */
+/* ============ СБРОС ЭКРАНА ============ */
 function resetStartScreen(keepName){
   const nameInput=$("nameInput");
   const goBtn=$("go");
@@ -676,6 +644,18 @@ async function bootstrap(){
   await preload();
   $("loading").style.display="none";
 
+  // === ПРОВЕРКА: может игрок уже проходил вторую часть? ===
+  const currentSaved=getCurrentPlayer();
+  if(currentSaved){
+    const played=getPart2Player(currentSaved);
+    if(played){
+      console.log("👤 Возвращается:",currentSaved,"|",played.relation);
+      showAlreadyPlayed(played);
+      return;
+    }
+  }
+
+  // Имя из первой части (для предзаполнения)
   let savedName=null;
   try{savedName=localStorage.getItem("tykva_current_player_v3")}catch(e){}
 
@@ -735,12 +715,15 @@ async function bootstrap(){
   confirmYes.addEventListener("click",async()=>{
     const raw=nameInput.value.trim();
     currentPlayer=raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase();
+
+    // Запоминаем текущего
+    setCurrentPlayer(currentPlayer);
     try{localStorage.setItem("tykva_current_player_v3",currentPlayer)}catch(e){}
 
-    // Спец-код: ставим флаг, но НЕ выходим сразу
+    // Спец-код
     if(currentPlayer.toLowerCase()===TEST_NAME.toLowerCase()){
       isTestMode=true;
-      console.log("🧪 Тестовый режим — Firebase не трогаем, блокировка работает");
+      console.log("🧪 Тест-режим: localStorage работает, Firebase — нет");
     } else {
       isTestMode=false;
     }
@@ -750,18 +733,19 @@ async function bootstrap(){
     startStatus.textContent="Заглядываем в хрустальный шар...";
     startStatus.className="save-status";
 
-    // 1. ЛОКАЛЬНАЯ ПРОВЕРКА
+    // 1. localStorage — уже играл во 2-й части?
     const localPlayed=getPart2Player(currentPlayer);
     if(localPlayed){
+      console.log("💾 Найден в localStorage:",localPlayed);
       showAlreadyPlayed(localPlayed);
       return;
     }
 
-    // 2. ТЕСТ-РЕЖИМ — не идёт в Firebase, стартует со «Смешанного»
+    // 2. Тест-режим — без Firebase
     if(isTestMode){
       setRelation("Смешанное");
       init="g";
-      startStatus.textContent="Тестовый режим";
+      startStatus.textContent="Тест-режим 🧪";
       startStatus.className="save-status ok";
       setTimeout(()=>{
         $("start").style.display="none";
@@ -780,7 +764,7 @@ async function bootstrap(){
       return;
     }
 
-    // 3. ОБЫЧНЫЙ ПОИСК В FIREBASE
+    // 3. Firebase
     let prev=null;
     if(db){
       try{
@@ -797,7 +781,6 @@ async function bootstrap(){
         }
       }catch(e){console.error("Firebase read:",e)}
     }
-    // fallback — localStorage v3
     if(!prev){
       try{
         const all=JSON.parse(localStorage.getItem("tykva_played_v3")||"{}");
@@ -845,10 +828,6 @@ async function bootstrap(){
     resetStartScreen(false);
     $("nameInput").focus();
   });
-
-  $("endBtn").onclick=()=>{
-    location.reload();
-  };
 
   $("binfo").onclick=e=>{
     e.stopPropagation();
