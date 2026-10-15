@@ -2,138 +2,294 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Тыква — визуальная новелла</title>
+<title>Тыква — часть 2: Гадалка</title>
 <style>
 :root{
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
-  --bg:#120a1c; --bg2:#2a1236; --box:#1d1128;
-  --tx:#f4eaff; --pk:#ff8a1f; --us:#6fb4ff; --glow:#ffd27a;
+  --pk:#ff8a1f;--us:#6fb4ff;
 }
-html{height:100%;-webkit-text-size-adjust:100%}
+html{height:100%}
 *{box-sizing:border-box;margin:0;padding:0}
 body{
-  margin:0;height:100%;background:#2a1236;color:var(--tx);
+  margin:0;height:100%;background:#000;color:#f4eaff;
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
   overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;
 }
-#bg-spiral{position:fixed;inset:-50%;width:200%;height:200%;z-index:-1;
-  background:repeating-radial-gradient(circle at 50% 50%,#6a1b9a 0px,#6a1b9a 30px,#ff7a00 30px,#ff7a00 60px);
-  animation:spin 40s linear infinite;opacity:.9}
-#bg-overlay{position:fixed;inset:0;z-index:-1;
-  background:radial-gradient(circle at 50% 50%,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.85) 90%);pointer-events:none}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-#app{height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto;padding:12px}
-#scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;position:relative}
-#pk{height:min(46vh,340px);max-width:92%;object-fit:contain;filter:drop-shadow(0 6px 14px #0008);animation:fl 3s ease-in-out infinite;transition:filter .3s,opacity .3s;opacity:.75}
-#pe{font-size:min(38vh,220px);line-height:1;display:none;animation:fl 3s ease-in-out infinite}
-#pk.on{filter:drop-shadow(0 0 28px var(--glow)) drop-shadow(0 0 50px #ff8a1f80);opacity:1}
+
+/* ФОН */
+#vx{position:fixed;inset:0;overflow:hidden;z-index:0;background:radial-gradient(circle at 50% 45%,#6b55d6,#241a78 55%,#0b0733)}
+#vx svg{position:absolute;left:50%;top:50%;width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;animation:spin 50s linear infinite;opacity:.85}
+#vx::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,#ffffffcc 0,#d9ccff88 6%,#8fb4ff33 22%,#0000 45%);animation:pulse 4s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(-360deg)}}
+@keyframes pulse{50%{opacity:.55;transform:scale(1.15)}}
+@media(prefers-reduced-motion:reduce){#vx svg,#vx::after{animation:none}}
+
+/* ИНТЕРФЕЙС */
+#app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto;padding:12px}
+#scene{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative}
+#pk{height:min(46vh,340px);max-width:92%;object-fit:contain;filter:drop-shadow(0 6px 14px #000);animation:fl 3s ease-in-out infinite;transition:filter .3s,opacity .3s;opacity:.7}
+#pk.on{filter:drop-shadow(0 0 26px #ff8a1f99);opacity:1}
+#pe{font-size:min(38vh,220px);display:none;animation:fl 3s ease-in-out infinite}
 @keyframes fl{50%{transform:translateY(-8px)}}
-#me{position:absolute;left:4px;bottom:0;font-size:44px;opacity:.35;transition:.3s}
-#me.on{opacity:1;filter:drop-shadow(0 0 14px var(--us))}
-#box{background:#1d1128ee;border:2px solid var(--pk);border-radius:14px;padding:12px 16px 16px;min-height:140px;position:relative;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 0 30px #ff8a1f33, inset 0 0 20px #00000055;transition:border-color .3s, box-shadow .3s}
-#box.u{border-color:var(--us);box-shadow:0 0 30px #6fb4ff33, inset 0 0 20px #00000055}
-#nm{font-weight:700;color:var(--pk);margin-bottom:6px;font-size:15px;text-shadow:0 0 8px #ff8a1f80}
-#box.u #nm{color:var(--us);text-shadow:0 0 8px #6fb4ff80}
+#pk.run{animation:none;transform:translateX(130vw);transition:transform 1.1s ease-in}
+
+#bd{
+  position:absolute;top:0;left:0;font-size:14px;font-weight:700;
+  padding:5px 12px;border-radius:20px;border:1.5px solid;background:#000a;
+}
+
+/* ХРУСТАЛЬНЫЙ ШАР */
+#ball{position:absolute;left:0;right:0;margin:0 auto;bottom:0;width:min(27vh,150px);aspect-ratio:200/230;display:none;animation:fl 2.4s ease-in-out infinite}
+#ball svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#bin{position:absolute;left:9%;top:5.65%;width:82%;height:71.3%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 40% 35%,#8d63d8,#3a1a78 55%,#170a38);display:flex;align-items:center;justify-content:center}
+#bin::before{content:"";position:absolute;inset:-30%;background:conic-gradient(from 0deg,#ffffff00,#c9a6ff44,#ffffff00,#7fd0ff33,#ffffff00);animation:sw 7s linear infinite}
+@keyframes sw{to{transform:rotate(360deg)}}
+#bimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+#bt{position:relative;display:none;align-items:center;justify-content:center;text-align:center;padding:0 10%;font-weight:800;font-size:clamp(12px,2.2vh,17px);line-height:1.15;color:#fff;text-shadow:0 0 10px #d7b8ff,0 0 3px #000}
+#xm{position:absolute;inset:0;display:none}
+#xm span{position:absolute;font-size:clamp(16px,3.2vh,26px);animation:xd var(--d,3s) ease-in-out infinite alternate,xb 1.3s ease-in-out infinite alternate}
+#xm span.s{left:50%;top:50%;font-size:clamp(34px,7vh,54px);animation:none;transform:translate(-50%,-50%);z-index:2;filter:drop-shadow(0 0 6px #000a)}
+@keyframes xd{from{left:4%}to{left:72%}}
+@keyframes xb{from{margin-top:-7px}to{margin-top:7px}}
+#ball.brk{animation:brk 1s ease-in forwards}
+@keyframes brk{
+  0%{transform:translateX(0)}
+  15%{transform:translateX(-6px) rotate(-4deg)}
+  30%{transform:translateX(6px) rotate(4deg)}
+  45%{transform:translateX(-5px)}
+  60%{transform:scale(1.05)}
+  100%{transform:scale(1.7);opacity:0;filter:blur(4px)}
+}
+#binfo{position:absolute;top:6px;right:8px;width:30px;height:30px;font-size:16px;background:#2c1840;border:1.5px solid #888;border-radius:50%;cursor:pointer;padding:0;display:none}
+#bhint{position:absolute;right:0;bottom:calc(100% + 6px);max-width:85%;background:#2a1840;border:1.5px solid #888;border-radius:10px;padding:8px 12px;font-size:14px;font-style:italic;color:#ddd;display:none;z-index:5}
+
+/* ДИАЛОГ */
+#box{background:#160d20;border:2px solid var(--pk);border-radius:14px;padding:12px 16px 18px;min-height:140px;position:relative;cursor:pointer}
+#box.u{border-color:var(--us)}
+#box.n,#box.a{border-color:#777}
+#nm{font-weight:700;color:var(--pk);margin-bottom:6px;font-size:15px;min-height:1em}
+#box.u #nm{color:var(--us)}
+#box.n #nm,#box.a #nm{color:#aaa}
 #tx{font-size:18px;line-height:1.45;min-height:3em}
+#box.n #tx{font-style:italic;color:#ccc}
+#box.a #tx{font-weight:700}
 #ar{position:absolute;right:12px;bottom:6px;color:var(--pk);animation:bl 1s infinite;display:none}
 @keyframes bl{50%{opacity:0}}
 #ch{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-#ch button,.btn{background:#2c1840ee;color:var(--tx);border:1.5px solid var(--us);border-radius:12px;padding:12px 14px;font-size:16px;text-align:left;cursor:pointer;font-family:inherit;transition:background .2s, transform .1s, box-shadow .2s;box-shadow:0 0 15px #6fb4ff22}
-#ch button:active,.btn:active{background:#3b2358;transform:scale(0.98);box-shadow:0 0 25px #6fb4ff55}
-#end{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
-#card{background:var(--box);border:2px solid #e33;border-radius:18px;padding:24px;text-align:center;max-width:420px;width:100%;box-shadow:0 0 40px #e33a, inset 0 0 30px #00000088;max-height:92vh;overflow-y:auto}
-#card h2{margin:0 0 6px;font-size:15px;font-weight:600;opacity:.8}
-#lab{font-size:30px;font-weight:800;margin:6px 0 14px;text-shadow:0 0 15px currentColor}
-#mt{display:flex;gap:6px;margin-bottom:16px}
-#mt i{flex:1;height:12px;border-radius:6px;background:#ffffff1f;transition:background .5s, box-shadow .5s}
-#ending-text{font-size:14px;line-height:1.5;color:#f4eaffcc;background:#2c184055;border-left:3px solid var(--pk);padding:12px 14px;border-radius:8px;margin-bottom:16px;text-align:left;font-style:italic}
-.btn{text-align:center;width:100%}
-#start{position:fixed;inset:0;background:#120a1cee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;z-index:20;backdrop-filter:blur(4px);overflow-y:auto}
-#start h1{margin:0;font-size:28px}
-#start p{opacity:.7;margin:0;font-size:14px;line-height:1.5}
-.name-input{background:#2c1840ee;color:var(--tx);border:2px solid var(--us);border-radius:12px;padding:14px 16px;font-size:18px;font-family:inherit;width:100%;max-width:320px;text-align:center;outline:none;transition:border-color .3s, box-shadow .3s;box-shadow:0 0 15px #6fb4ff22}
-.name-input:focus{border-color:var(--pk);box-shadow:0 0 25px #ff8a1f55}
+#ch button,.btn{background:#24143a;color:#f4eaff;border:1.5px solid var(--us);border-radius:12px;padding:12px 14px;font-size:16px;text-align:left;cursor:pointer;font-family:inherit}
+#ch button:active,.btn:active{background:#3b2358}
+.row{position:relative}
+.row button{width:100%;padding-right:44px}
+
+/* ЭКРАН ЗАГРУЗКИ */
+#loading{
+  position:fixed;inset:0;background:#0b0733;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:22px;padding:24px;z-index:50;text-align:center;
+}
+#loading .title{font-size:22px;font-weight:700;color:#ff8a1f;text-shadow:0 0 15px #ff8a1f88;letter-spacing:2px}
+#loading .pump{font-size:70px;animation:fl 2s ease-in-out infinite;filter:drop-shadow(0 0 20px #ff8a1faa)}
+#loading .pwrap{width:100%;max-width:300px;height:12px;background:#2c1840aa;border-radius:8px;overflow:hidden;border:1px solid #6fb4ff44}
+#loading .pbar{height:100%;width:0%;background:linear-gradient(90deg,#ff8a1f,#ff5c00);transition:width .25s ease;box-shadow:0 0 15px #ff8a1faa}
+#loading .ptext{font-size:13px;opacity:.7;letter-spacing:1px;font-family:monospace}
+
+/* СТАРТ */
+#start{
+  position:fixed;inset:0;z-index:20;background:#0b0733ee;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;padding:24px;text-align:center;backdrop-filter:blur(4px);overflow-y:auto;
+}
+#start h2{margin:0;font-size:24px}
+#start p{opacity:.75;margin:0;font-size:14px;line-height:1.5;max-width:320px}
+.name-input{
+  background:#1d1128ee;color:#f4eaff;border:2px solid #6fb4ff;border-radius:12px;
+  padding:14px 16px;font-size:18px;font-family:inherit;width:100%;max-width:320px;
+  text-align:center;outline:none;transition:border-color .3s, box-shadow .3s;
+  box-shadow:0 0 15px #6fb4ff22;
+}
+.name-input:focus{border-color:#ff8a1f;box-shadow:0 0 25px #ff8a1f55}
 .name-input::placeholder{color:#ffffff55}
 .name-input.error{border-color:#e33;box-shadow:0 0 25px #e3355;animation:shake-input 0.4s}
 @keyframes shake-input{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}
-.name-hint{font-size:13px;color:#ffffff66;transition:color .3s, font-size .3s;min-height:20px;font-weight:500;max-width:320px;text-align:center;line-height:1.4}
-.name-hint b{color:#ff8a1f;font-size:17px}
-.name-hint.confirm{font-size:15px;color:#f4eaffcc}
+.name-hint{font-size:12px;color:#ffffff66;transition:color .3s;min-height:16px;font-weight:500;max-width:320px;text-align:center;line-height:1.3}
 .name-hint.error{color:#e33;font-weight:700;text-shadow:0 0 10px #e3380;font-size:13px}
-.btn-primary{background:linear-gradient(135deg, #ff8a1f, #ff5c00);color:#1d1128;font-weight:700;border:none;padding:14px 20px;border-radius:12px;font-size:17px;cursor:pointer;font-family:inherit;width:100%;max-width:320px;box-shadow:0 0 25px #ff8a1f66;transition:transform .1s, box-shadow .3s}
+.btn-primary{
+  background:linear-gradient(135deg, #ff8a1f, #ff5c00);color:#1d1128;font-weight:700;
+  border:none;padding:14px 20px;border-radius:12px;font-size:17px;cursor:pointer;
+  font-family:inherit;width:100%;max-width:320px;
+  box-shadow:0 0 25px #ff8a1f66;transition:transform .1s, box-shadow .3s;
+}
 .btn-primary:active{transform:scale(0.97);box-shadow:0 0 40px #ff8a1f99}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
-.btn-secondary{background:linear-gradient(135deg,#3b2358,#2c1840);color:#f4eaff;font-weight:600;border:1.5px solid #6fb4ff44;padding:12px 20px;border-radius:12px;font-size:15px;cursor:pointer;font-family:inherit;width:100%;max-width:320px;transition:transform .1s}
+.btn-secondary{
+  background:linear-gradient(135deg,#3b2358,#2c1840);color:#f4eaff;font-weight:600;
+  border:1.5px solid #6fb4ff44;padding:12px 20px;border-radius:12px;font-size:15px;
+  cursor:pointer;font-family:inherit;width:100%;max-width:320px;transition:transform .1s;
+}
 .btn-secondary:active{transform:scale(0.97)}
 .save-status{font-size:12px;opacity:.6;text-align:center;max-width:320px;min-height:16px}
 .save-status.ok{color:#5d5;opacity:1}
 .save-status.err{color:#e33;opacity:1}
-.shake{animation:shake 0.4s cubic-bezier(.36,.07,.19,.97) both}
-@keyframes shake{10%,90%{transform:translate3d(-2px,0,0)}20%,80%{transform:translate3d(4px,0,0)}30%,50%,70%{transform:translate3d(-6px,0,0)}40%,60%{transform:translate3d(6px,0,0)}}
-.shake-strong{animation:shake-strong 0.5s cubic-bezier(.36,.07,.19,.97) both}
-@keyframes shake-strong{10%,90%{transform:translate3d(-4px,-2px,0)}20%,80%{transform:translate3d(8px,2px,0)}30%,50%,70%{transform:translate3d(-12px,-2px,0)}40%,60%{transform:translate3d(12px,2px,0)}}
-.locked-badge{display:inline-block;background:#e33;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
-#loading{position:fixed;inset:0;background:#120a1c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:24px;z-index:100;text-align:center}
-#loading .loading-title{font-size:22px;font-weight:700;color:var(--pk);text-shadow:0 0 15px #ff8a1f88;letter-spacing:2px}
-#loading .loading-pumpkin{font-size:70px;animation:fl 2s ease-in-out infinite;filter:drop-shadow(0 0 20px #ff8a1faa)}
-#loading .progress-wrap{width:100%;max-width:320px;height:14px;background:#2c1840aa;border-radius:8px;overflow:hidden;border:1px solid #6fb4ff44;box-shadow:inset 0 0 10px #00000088}
-#loading .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#ff8a1f,#ff5c00);transition:width .3s ease;box-shadow:0 0 15px #ff8a1faa}
-#loading .progress-text{font-size:13px;opacity:.7;letter-spacing:1px;font-family:monospace}
-#loading .progress-name{font-size:12px;opacity:.5;min-height:16px}
+
+/* НЕ НАЙДЕН */
+#notFound{
+  position:fixed;inset:0;z-index:40;background:#0b0733ee;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;padding:24px;text-align:center;backdrop-filter:blur(6px);
+}
+#notFound .emoji{font-size:70px;animation:fl 2s ease-in-out infinite;filter:drop-shadow(0 0 20px #e33aa)}
+#notFound h2{color:#e33;font-size:22px;margin:0;text-shadow:0 0 15px #e3388}
+#notFound p{opacity:.8;margin:0;max-width:340px;font-size:14px;line-height:1.6}
+#notFound .small{opacity:.55;font-size:12px;margin-top:8px}
+
+/* УЖЕ ПРОШЁЛ */
+#alreadyPlayed{
+  position:fixed;inset:0;z-index:40;background:#0b0733ee;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;padding:24px;text-align:center;backdrop-filter:blur(6px);
+}
+#alreadyPlayed h2{color:#ff8a1f;font-size:20px;margin:0;text-shadow:0 0 15px #ff8a1f88}
+#alreadyPlayed .relCard{
+  background:#1d1128ee;border:2px solid;border-radius:14px;padding:16px 20px;
+  max-width:340px;width:100%;text-align:center;
+}
+#alreadyPlayed .relLabel{font-size:13px;opacity:.7;margin-bottom:6px}
+#alreadyPlayed .relName{font-size:24px;font-weight:800;margin-bottom:12px;text-shadow:0 0 12px currentColor}
+#alreadyPlayed .bars{display:flex;gap:5px;margin-bottom:14px}
+#alreadyPlayed .bars i{flex:1;height:10px;border-radius:5px;background:#ffffff22}
+#alreadyPlayed .etext{font-size:12px;opacity:.75;line-height:1.5;font-style:italic}
+#alreadyPlayed .badge{display:inline-block;background:#e33;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
+
+/* ФИНАЛ */
+#ending{
+  position:fixed;inset:0;background:#000d;display:none;
+  align-items:center;justify-content:center;padding:20px;z-index:30;
+}
+#ecard{
+  background:#1d1128;border:2px solid #e33;border-radius:18px;padding:24px;
+  text-align:center;max-width:420px;width:100%;
+  box-shadow:0 0 40px #e33a, inset 0 0 30px #00000088;
+  max-height:92vh;overflow-y:auto;
+}
+#ecard h2{margin:0 0 6px;font-size:15px;font-weight:600;opacity:.8}
+#elab{font-size:28px;font-weight:800;margin:6px 0 14px;text-shadow:0 0 15px currentColor}
+#etext{font-size:14px;line-height:1.5;color:#f4eaffcc;background:#2c184055;border-left:3px solid #e33;padding:12px 14px;border-radius:8px;margin-bottom:16px;text-align:left;font-style:italic}
+#ecard .btn{background:linear-gradient(135deg,#ff8a1f,#ff5c00);color:#1d1128;font-weight:700;border:none;padding:14px;text-align:center;border-radius:12px;width:100%}
 </style>
 </head>
 <body>
-<div id="bg-spiral"></div>
-<div id="bg-overlay"></div>
+<div id="vx"></div>
 
 <div id="loading">
-  <div class="loading-pumpkin">🎃</div>
-  <div class="loading-title">ЗАГРУЗКА...</div>
-  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-  <div class="progress-text" id="progressText">0%</div>
-  <div class="progress-name" id="progressName"></div>
+  <div class="pump">🎃</div>
+  <div class="title">ГАДАЛКА ЗАГРУЖАЕТСЯ...</div>
+  <div class="pwrap"><div class="pbar" id="pbar"></div></div>
+  <div class="ptext" id="ptext">0%</div>
+  <div class="ptext" id="pname" style="opacity:.4;min-height:16px"></div>
 </div>
 
 <div id="app">
   <div id="scene">
     <img id="pk" alt="Тыква">
     <div id="pe">🎃</div>
-    <div id="me">👤</div>
+    <div id="bd"></div>
+
+    <div id="ball">
+      <svg viewBox="0 0 200 230">
+        <defs>
+          <linearGradient id="gd" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#6b4416"/>
+            <stop offset=".45" stop-color="#e8b85a"/>
+            <stop offset="1" stop-color="#5a3510"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="100" cy="214" rx="72" ry="13" fill="#3a2209"/>
+        <path d="M58 182 L142 182 L162 212 Q100 228 38 212 Z" fill="url(#gd)" stroke="#2e1a06" stroke-width="2"/>
+        <ellipse cx="100" cy="180" rx="48" ry="10" fill="url(#gd)" stroke="#2e1a06" stroke-width="2"/>
+      </svg>
+      <div id="bin">
+        <img id="bimg" alt="">
+        <span id="bt"></span>
+        <div id="xm"></div>
+      </div>
+      <svg viewBox="0 0 200 230">
+        <defs>
+          <radialGradient id="gl" cx=".5" cy=".5" r=".5">
+            <stop offset=".62" stop-color="#fff" stop-opacity="0"/>
+            <stop offset="1" stop-color="#b9a0ff" stop-opacity=".55"/>
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="95" r="82" fill="url(#gl)" stroke="#e9dcff" stroke-opacity=".55" stroke-width="3"/>
+        <ellipse cx="68" cy="52" rx="26" ry="14" transform="rotate(-35 68 52)" fill="#fff" fill-opacity=".55"/>
+        <circle cx="132" cy="150" r="6" fill="#fff" fill-opacity=".4"/>
+        <path d="M40 118 Q46 150 72 166" stroke="#fff" stroke-opacity=".35" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
   </div>
-  <div id="box"><div id="nm"></div><div id="tx"></div><span id="ar">▼</span></div>
+
+  <div id="box">
+    <div id="nm"></div>
+    <div id="tx"></div>
+    <span id="ar">▼</span>
+    <button id="binfo">ℹ️</button>
+    <div id="bhint"></div>
+  </div>
   <div id="ch"></div>
 </div>
 
-<div id="end">
-  <div id="card">
-    <h2>Диалог окончен. Отношение Тыквы к вам:</h2>
-    <div id="lab"></div>
-    <div id="mt"><i></i><i></i><i></i><i></i><i></i></div>
-    <div id="ending-text"></div>
-    <div class="save-status" id="saveStatus"></div>
-  </div>
-</div>
-
-<div id="start" style="display:none">
-  <img id="si" style="height:150px;filter:drop-shadow(0 6px 14px #0008)" alt="Тыква">
-  <h1>Тыква</h1>
-  <p id="startSub">Нажимай на текст, чтобы листать.<br>Выбирай реплики сам.</p>
-  <div id="lockedBox" style="display:none"></div>
+<!-- СТАРТ -->
+<div id="start">
+  <img id="si" style="height:170px;filter:drop-shadow(0 6px 14px #0008)" src="https://i.postimg.cc/XYBnMR93/FA875B24-F64E-4763-9A29-FCE909242FE7.png" alt="Тыква">
+  <h2>Тыква-гадалка</h2>
+  <p>Введи имя, которое ты использовал в первой части</p>
   <input type="text" id="nameInput" class="name-input" placeholder="Введи своё имя..." maxlength="20" autocomplete="off">
-  <div class="name-hint" id="nameHint">Указывай своё настоящее имя</div>
-  <button class="btn-primary" id="go" disabled>Начать</button>
+  <div class="name-hint" id="nameHint">Указывай имя, которое вводил в первой части</div>
+  <button class="btn-primary" id="go" disabled>Начать гадание</button>
   <button class="btn-primary" id="confirmYes" style="display:none">Да, всё верно</button>
   <button class="btn-secondary" id="confirmNo" style="display:none">Нет, изменить</button>
   <div class="save-status" id="startStatus"></div>
+</div>
+
+<!-- НЕ НАЙДЕН -->
+<div id="notFound">
+  <div class="emoji">🚫🎃</div>
+  <h2>Игрок не найден</h2>
+  <p>Ты не играл в первую часть!</p>
+  <p>А во вторую часть сейчас не сыграть. Так что отдыхай 😴</p>
+  <p class="small">Может быть, ты ошибся в имени? Можешь попробовать другое.</p>
+  <button class="btn-primary" id="notFoundRetry" style="margin-top:8px">Ввести другое имя</button>
+</div>
+
+<!-- УЖЕ ПРОШЁЛ -->
+<div id="alreadyPlayed">
+  <div class="badge">Уже пройдено</div>
+  <h2 id="apTitle">Привет!</h2>
+  <div class="relCard" id="apCard">
+    <div class="relLabel">Твоё отношение с Тыквой:</div>
+    <div class="relName" id="apRel"></div>
+    <div class="bars" id="apBars"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="etext" id="apText"></div>
+  </div>
+</div>
+
+<!-- ФИНАЛ -->
+<div id="ending">
+  <div id="ecard">
+    <h2>Диалог окончен. Отношение Тыквы к вам:</h2>
+    <div id="elab"></div>
+    <div id="etext"></div>
+    <button class="btn" id="endBtn">Пройти заново</button>
+  </div>
 </div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js';
 
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyDatHxLZG-BeDTHjQ6hs0N2Kg6ZlZ-WcwU",
   authDomain: "tykva-633a9.firebaseapp.com",
@@ -141,376 +297,563 @@ const firebaseConfig = {
   projectId: "tykva-633a9",
   storageBucket: "tykva-633a9.firebasestorage.app",
   messagingSenderId: "303789270617",
-  appId: "1:303789270617:web:4a8e929cb95dd45d2e3348",
-  measurementId: "G-H2B4WLQ1WL"
+  appId: "1:303789270617:web:4a8e929cb95dd45d2e3348"
 };
-
-/* ============================================================
-   ⏰ ДЕДЛАЙН: 12 октября 2026, 19:00
-   ============================================================ */
-const DEADLINE = new Date("2026-10-12T19:00:00").getTime();
-
-let db = null;
+let db=null;
 try{
-  const app = initializeApp(firebaseConfig);
-  db = getDatabase(app);
-  console.log("✓ Firebase подключён");
-} catch(e){
-  console.error("✗ Ошибка Firebase:", e);
-}
+  db=getDatabase(initializeApp(firebaseConfig));
+  console.log("✓ Firebase готов");
+}catch(e){console.error("✗ Firebase:",e)}
 
-/* ============================================================
-   LOCALSTORAGE v3 — старые ключи игнорируются, все получают вторую попытку
-   ============================================================ */
-const LS_PLAYED_KEY = "tykva_played_v3";
+/* СПЕЦ-КОД */
+const TEST_NAME="ЛиляТест";
+let isTestMode=false;
 
-function getLocalPlayers(){
+/* LOCALSTORAGE ДЛЯ БЛОКИРОВКИ ВТОРОЙ ЧАСТИ */
+const LS_PART2_KEY="tykva_part2_played_v1";
+function getPart2Players(){
   try{
-    const raw = localStorage.getItem(LS_PLAYED_KEY);
-    return raw ? JSON.parse(raw) : {};
-  }catch(e){ return {}; }
+    const raw=localStorage.getItem(LS_PART2_KEY);
+    return raw?JSON.parse(raw):{};
+  }catch(e){return{}}
+}
+function savePart2Player(name,relation,level){
+  const all=getPart2Players();
+  all[name]={name,relation,level,date:Date.now()};
+  try{localStorage.setItem(LS_PART2_KEY,JSON.stringify(all))}catch(e){}
+}
+function getPart2Player(name){
+  const all=getPart2Players();
+  return all[name]||null;
 }
 
-function saveLocalPlayer(name, relation, level){
-  const all = getLocalPlayers();
-  all[name] = { name, relation, level, date: Date.now() };
-  try{
-    localStorage.setItem(LS_PLAYED_KEY, JSON.stringify(all));
-  }catch(e){ console.warn("localStorage error:", e); }
-}
-
-function getLocalPlayer(name){
-  const all = getLocalPlayers();
-  return all[name] || null;
-}
-
-const IMG={
-  greet:"https://i.postimg.cc/XYBnMR93/FA875B24-F64E-4763-9A29-FCE909242FE7.png",
-  conf:"https://i.postimg.cc/T35T8znx/05953127-26C6-4D3D-BB77-4A225B9E6D8A.png",
-  slay:"https://i.postimg.cc/Vk0zyxnp/07ABE94A-48A1-4876-8E49-2C5F9B8F4F1F.png",
-  angry:"https://i.postimg.cc/8zfT82Mn/19D29FF4-3E9A-4DB5-AB60-5F621D18BFA2.png",
-  rage:"https://i.postimg.cc/x1N9rwMB/96AF9BD8-BE82-4883-914F-51F9D47BC728.png",
-  bored:"https://i.postimg.cc/QdKjL21R/B257CDFB-9193-4B1B-9030-260C5E1D3708.png",
-  disap:"https://i.postimg.cc/RZJvrkwz/BFC08DA7-8CD2-433A-8A98-93B1EF8DB627.png",
-  into:"https://i.postimg.cc/Nj2Qh3mb/IMG-4788.png"
+/* КАРТИНКИ */
+const B="https://i.postimg.cc/";
+const E={
+  greet:B+"TYYZBYM5/446B489C-AE96-4B50-9C93-B320E5A74C83.png",
+  happy:B+"hPPHNPWX/1F2DBD99-220D-48CE-B843-DA86C9436711.png",
+  unhappy:B+"sfJknG85/4A29F177-868A-4A9D-970C-7CF1B4263090.png",
+  smile:B+"Wp7B9qKM/E1956ABE-4B74-4D21-8B1F-0A0CB1EEA878.png",
+  arrogant:B+"7PNFBJc0/9628E3D2-8AC5-4B28-B91F-854E2789B1A3.png",
+  fortune:B+"T2czk5SK/763FD5CF-F57F-466B-9837-9B50165D900B.png",
+  scared:B+"05CTtK3y/IMG-4895.png",
+  disap:B+"05CTtK3y/IMG-4895.png"
 };
+const MASK="https://i.postimg.cc/KYVRKvBB/IMG-1588.jpg";
+const EMPIRE_IMG="https://i.postimg.cc/zG2k5GnB/IMG-4901.jpg";
+const START_PUMPKIN="https://i.postimg.cc/XYBnMR93/FA875B24-F64E-4763-9A29-FCE909242FE7.png";
+const NAMES={greet:"Приветствие",happy:"Довольный",unhappy:"Недовольный",smile:"Улыбающийся",arrogant:"Надменный",fortune:"Гадающий",scared:"Испуганно злой",disap:"Разочарованный"};
 
-const NAMES_FOR_LOAD={
-  greet:"Приветствие",conf:"Растерянность",slay:"Сплетни",angry:"Злость",
-  rage:"Ярость",bored:"Скука",disap:"Разочарование",into:"Вовлечённость"
-};
-
-function preloadAllImages(){
-  const entries=Object.entries(IMG);
-  const total=entries.length;
+function preload(){
+  const urls=[...Object.values(E),MASK,EMPIRE_IMG,START_PUMPKIN];
+  const names=[...Object.keys(E).map(k=>NAMES[k]||k),"Маска","Империя Слэя","Приветственная тыква"];
+  const total=urls.length;
   let loaded=0,failed=0;
-  const progressBar=document.getElementById("progressBar");
-  const progressText=document.getElementById("progressText");
-  const progressName=document.getElementById("progressName");
-
-  return new Promise(resolve=>{
-    entries.forEach(([key,url])=>{
-      const img=new Image();
-      img.onload=()=>{loaded++;updateProgress()};
-      img.onerror=()=>{failed++;loaded++;updateProgress()};
-      img.src=url;
-      progressName.textContent=`Загрузка: ${NAMES_FOR_LOAD[key]||key}...`;
-      function updateProgress(){
-        const pct=Math.round((loaded/total)*100);
-        progressBar.style.width=pct+"%";
-        progressText.textContent=pct+"%";
+  const bar=document.getElementById("pbar");
+  const txt=document.getElementById("ptext");
+  const nm=document.getElementById("pname");
+  return new Promise(res=>{
+    urls.forEach((u,i)=>{
+      const im=new Image();
+      im.onload=()=>{loaded++;tick()};
+      im.onerror=()=>{failed++;loaded++;tick()};
+      im.src=u;
+      nm.textContent="Загрузка: "+(names[i]||"?")+"...";
+      function tick(){
+        const pct=Math.round(loaded/total*100);
+        bar.style.width=pct+"%";
+        txt.textContent=pct+"%";
         if(loaded>=total){
-          progressText.textContent="100% — Готово!";
-          progressName.textContent=failed>0?`Загружено ${total-failed} из ${total}`:`Все ${total} эмоций загружены 🎃`;
-          setTimeout(resolve,400);
+          txt.textContent="100% — Готово!";
+          nm.textContent=failed?`Загружено ${total-failed} из ${total}`:`Все ${total} картинок готовы 🎃`;
+          setTimeout(res,400);
         }
       }
     });
   });
 }
 
-const P="p",U="u";
-const GREET=["Здравствуй, ничтожество","Еще один, да откуда вы лезете","Может, надо было вас в крыс превратить, чтобы вы меня не доставали?","Долго молчать будем?"];
-const BS="Не люблю говорить все по два раза, поэтому слушай внимательно! Я был таким же как они - этим склизким, мерзким существом - тюленем. Но им видите ли мой характер не нравился! «Тюленчики же добрые! Они не могут обижать себя и других» - говорили они. И в один из дней, из-за какой-то #%@₽# они меня схватили, привязали к стулу и... ОБРАТИЛИ МЕНЯ В ТЫКВУ! И скинули в это подземелье, чтобы меня никто не нашел... Но вы, глупенькие подростки, ищущие приключения на задницу, освободили меня! Теперь я расхреначу Тюленчиков, а потом и всех людей превращу в подчиняемых мне КУКОЛ ВУДУ!";
-const AFTER=[["А может у тебя мания величия? Я согласен с ними, все тюленчики должны быть позитивными и добрыми!","mania"],["Согласен с тобой, эти тюленчики еще те Твари!","agree"]];
-const OK=[["Че?","che"],["Ну ок","nok"]];
-const Q=[["Как тебе погода за окном?","wx"],["Ты актив или пассив?","ap"],["Тебе не кажется странным то, что 5-метровый Влад общается с 0,5-метровой Эвелиной?","vlad"]];
-const N={
-hi:{l:[[P,"Второй раз здороваться не буду, говори коротко и по делу!"]],c:[["Расколдуй Нас!","unspell"],["Ты нейросеть? Очень странно общаешься...","nn"],["Бебебе","bb"]]},
-unspell:{l:[[P,"Чтобы вы сбежали? Нет! Я еще не до конца осуществил свой план!"],[U,"Какой План?"],[P,"Мне нужно избавиться от этого... города Тюленчиков. Уж слишком все хорошо и сладко там!"]],c:[["А чем они тебе дорогу перешли? Тюленчики же вроде хорошие...","rant"],["Согласен с тобой, эти тюленчики еще те Твари!","agree"]]},
-rant:{l:[[P,"ОНИ?! ХОРОШИЕ?! ДА ТЫ ВООБЩЕ ЗНАЕШЬ ЧТО ОНИ ДЕЛАЮТ С ТЕМИ, КТО НЕ ПОДЧИНЯЕТСЯ ИМ?! А, точно... Ты же не проходишь АРГ.. Чувак, ты много теряешь!"],[U,"Так что случилось то?.."],[P,BS]],c:AFTER},
-nn:{l:[[P,"А у тебя диагноз «Аутизм»?"]],n:"bbu"},
-bbu:{l:[[U,"Бебебе"]],n:"bb"},
-bb:{l:[[P,"Ладно, мне все ясно..."]],c:OK},
-nok:{l:[],e:"Смешанное"},
-che:{l:[[P,"Ничего, просто понял что культурностью тут и не пахнет"],[U,"Ну вообще то я конкретный вопрос задал, ты нейросеть?"],[P,"Нет. Я не нейросеть."],[U,"А кто тогда?"],[P,"Меньше знаешь, крепче спишь!"]],c:[["Ну скажи!!! Мне правда интересно","say"],["Да пожалуйста!","dp"]]},
-dp:{l:[],e:"Недоверительное"},
-say:{l:[[P,"Решай в следующий раз АРГ, чтобы мне потом не пересказывать по два раза... Тюлень я, а меня обратили в тыкву"],[U,"А за что?...."],[P,BS]],c:AFTER},
-mania:{l:[[P,"ПОШЕЛ ОТСЮДА ВОН!"]],e:"Ужасное"},
-agree:{l:[[P,"А ты хоть что-то понимаешь... Ладно, ты заслужил каплю моего уважения!"]],c:[["Спасибо, о мой повелитель!!!","thx"],["А я то думал что ты типичный злодей злодейский!","villain"]]},
-villain:{l:[[P,"А я то думал что ты как эти, чокнутые. Есть в тебе капля души... О чем это я, ступай, может теперь у меня есть любимчик... Надеюсь ты не подумал, что это ты?"]],e:"Хорошее"},
-thx:{l:[[P,"А, ясно, ты такой же тупой как и твои дружки.. Как ты только додумался до предыдущего ответа?"],[U,"Прости, я не хотел"],[P,"Держать обиду не буду, я же не Ласковая Игривая Любимая Яблоня... Не понял? Ну значит ты не умеешь читать. Короче, не знаю что с тобой, но либо у тебя биполярка, либо ты очень любишь переобуваться... Странный ты типок"]],e:"Недоверительное"},
-rude:{l:[[P,"А тебе надо на блюдечке с бантиком и конфетти?"]],c:[["Ну да","ryes"],["Нет, просто относись с уважением!","rno"]]},
-ryes:{l:[[P,"Может мне ещё тебе жопу поцеловать?"],[U,"Спасибо, я не люблю кунилингус"],[P,"Да как ты смеешь?! Ты вообще знаешь кто я?"]],c:[["Да, ты неудачник!","loser"],["Нет","rnope"]]},
-loser:{l:[[P,"У меня не стальные нервы!!!"],[U,"Тыквенные?"],[P,"*Ударяет* Ты ничтожное простолюдинское смертное создание! У тебя нет мощи, нет власти, нет способностей! Да я могу тебя в крошку превратить…"],[U,"Так преврати"]],n:"conf"},
-rnope:{l:[[P,"Вот значит и гуляй лесом!"],[U,"Как гулять, если ты нас запер?"],[P,"Может хватит цепляться за слова?"],[U,"Может тогда отпустишь нас? Типо реал, а что мы сделаем тебе, раз ты такое великое существо?"]],n:"conf"},
-conf:{l:[[P,"*Растерянно*…"],[U,"Я ведь правильно понимаю, у тебя есть обида и ты пытаешься выместить её на нас?"],[P,"Нет у меня никакой обиды!"],[U,"Тогда почему ты нас не убил, раз ты так жесток?"],[P,"*Растерянно*…"]],e:"Смешанное"},
-rno:{l:[[P,"Я буду относиться так, как захочу, и не тыкай мне!"],[U,"На что обижен?"],[P,"Не на что, не люблю когда мне тыкают! Задавай свои вопросы и гуляй!"]],c:Q},
-wx:{l:[[P,"Ночь, кладбище… КАКАЯ #%*$ ПОГОДА? Если уж спрашиваешь, то спрашивай по делу"]],c:[Q[1],Q[2]]},
-vlad:{l:[[P,"Кстати да! Они даже в форме кукол Вуду смотрятся слишком контрастно! А ты шаришь…"],[U,"БТВ, у тебя есть теория почему Влад ВСЕГДА в желтой куртке? Все до сих пор гадают про это..."],[P,"Поговаривают, ту ночь с Тоджи он провел именно в этой куртке, из-за этого она впитала его запах и он хочет нюхать ее на постоянке!"],[U,"РЕАЛЬНО?"],[P,"Типо того… Эвелина кстати по такому же принципу рубашку носит…"],[U,"Так а с кем Тоджи сейчас?"],[P,"С Лилей…"],[U,"Я ВАЛЯЮСЬ"],[P,"Зай, я сам чуть на тыквенные семечки не распался, когда узнал это... Круто было посплетничать, но мне еще пустоголовых принимать надо... ОБЯЗАТЕЛЬНО ЖДУ ТЕБЯ ЗАВТРА!"]],e:"Бести"},
-ap:{l:[[P,"Ой бл#, ну а сам как думаешь?"]],c:[["Актив","act"],["Пассив","pas"]]},
-act:{l:[[P,"Мне считать это за комплимент? Спасибо. Но надеюсь мы больше не будем обсуждать сексуальные темы?"]],c:[["Ок, хорошо","okay"],["Еще как будем))","fb"]]},
-okay:{l:[[P,"Вот и отлично."]],e:"Недоверительное"},
-fb:{l:[[U,"Ты бы сделал обрезание за PS5?"],[P,"Ты бы лучше учил уроки. Иди-ка лучше ты отсюда, вегетофил"]],e:"Ужасное"},
-pas:{l:[[P,"Ах%#л? Да даже если пассив, я тыква в конце концов.... Неужели ты поощряешь людей, которые... Используют тыкву не по назначению?"],[U,"Так а если на природном плане смотреть? Когда всякие цветочки и пыльца?"],[P,"Ты бы лучше учил уроки. Иди-ка лучше ты отсюда, вегетофил"]],e:"Ужасное"},
-polite:{l:[[P,"О, а вот и мой «любимый» тип - Няшечки Вкусняшечки..."]],c:[["Эм, нет. Я просто вежливый, в отличии от некоторых.","pb"],["ДА СЕМПАЙ, Я ПОЛНОСТЬЮ ТВОЯ!!!","pa"]]},
-pb:{l:[[P,"Ну и что нужно этому «вежливому»?"],[U,"Миллион долларов и яхту"],[P,"Эх... Будь ты моим любимчиком мог бы и исполнить..."],[U,"РЕАЛЬНО?"],[P,"Ты типо так и не понял, что я могу реализовывать все, что только пожелаю?"],[U,"... [В мыслях] как стать его любимчиком?"],[P,"Ты уверен, что ты реально?"],[U,"В смысле?"],[P,"Да я как будто с Character.Ai пообщался.."],[U,"..."],[P,"Есть еще что сказать? Или опять в мыслях будешь летать?"],[U,"..."],[P,"Понятно, надеюсь ты завтра не вернешься..."]],e:"Ужасное"},
-pa:{l:[[P,"Ты давно был у врача?"],[U,"Нет, я был совсем недавно! Я захожу к нему и на весь кабинет «Охаешечки-Датебаешечки!»"],[P,"И что он сказал?"],[U,"Сказал, что у меня Переизбыток Аниме! Наруто! Кан-Сэ-Бёк!"],[P,"ХА! Я ТЕБЯ ПОЙМАЛ, НИКАКОЙ ТЫ НЕ АНИМЕШНИК! НАРУТО — ЯПОНСКОЕ АНИМЕ, А КАН-СЭ-БЁК ИЗ ДОРАМЫ ИГРА В КАЛЬМАРА!"],[U,"..."],[P,".... Забудь. Так что ты хотел от меня?"]],c:[["Уже ничего...","pa1"],["Я хочу... ПЕЧЕНЬКО!!!","pa2"]]},
-pa1:{l:[[P,"Отлично!..."]],e:"Смешанное"},
-pa2:{l:[[P,"...."]],e:"Недоверительное"}
+/* ОТНОШЕНИЕ */
+const LEVELS={
+  "Ужасное":{n:1,c:"#e33"},
+  "Недоверительное":{n:2,c:"#f90"},
+  "Смешанное":{n:3,c:"#fd3"},
+  "Хорошее":{n:4,c:"#5d5"},
+  "Отличное":{n:5,c:"#f6c"}
+};
+let currentRelation="Смешанное";
+let currentPlayer="";
+
+function setRelation(level){
+  if(!LEVELS[level])return;
+  currentRelation=level;
+  const bd=document.getElementById("bd");
+  bd.textContent="Отношение: "+level;
+  bd.style.color=LEVELS[level].c;
+  bd.style.borderColor=LEVELS[level].c;
+}
+
+/* ГРАФ */
+const EM={
+  "приветствие":"greet","приветственная":"greet",
+  "довольный":"happy","недовольный":"unhappy",
+  "улыбающийся":"smile","надменный":"arrogant","надменно":"arrogant","скептик":"arrogant",
+  "гадающий":"fortune","задумчивый":"fortune",
+  "испуганно злой":"scared","разочарованный":"disap"
 };
 
-const LV={"Ужасное":[1,"#e33"],"Недоверительное":[2,"#f90"],"Смешанное":[3,"#fd3"],"Хорошее":[4,"#5d5"],"Бести":[5,"#f6c"]};
-
-const ENDING_TEXT={
-  "Ужасное":"Походу ты был слишком груб с тыквой. Или он слишком ранимый... Посмотрим, что будет дальше, возвращайся сюда на следующий день!",
-  "Недоверительное":"Ну... Это всяко лучше чем ужасное отношение... Попробуй с ним чуть нежнее в следующий раз, может быть у вас что-то да склеится",
-  "Смешанное":"Тыква явно не обозлен на тебя, но и не доверяет тебе... Но ты идешь в правильном направлении, так держать!",
-  "Хорошее":"Тыква явно доволен диалогом с тобой, ведь ты выделился от основной массы, быть может вы приближаетесь к статусу друзья?",
-  "Бести":"Не знаю как, но тебе удалось стать чуть ли не лучшими друзьями с тыквой. Сплетни любят все, главное поддерживай с ней положительный контакт!"
-};
-
-const RULES=[
-  [/Растерянно|^\.{3,}/,"conf"],[/ПОШЕЛ ОТСЮДА|Ударяет/,"rage"],
-  [/блюдечке|диагноз|КАКАЯ|не стальные/,"angry"],
-  [/избавиться от этого|А, ясно|Вот значит|цепляться за слова/,"bored"],
-  [/Ладно, мне все ясно|Ничего, просто понял/,"disap"],
-  [/Кстати да/,"into"],[/Поговаривают|Типо того|С Лилей|Зай, я сам/,"slay"]
+const QS=[
+  ["Меня ждёт богатство и удача 10 лет вперед?","money"],
+  ["Какое будет следующее событие?","event"],
+  ["Когда выйдет ARG 2?","arg"]
 ];
-function emo(t){for(const[r,e]of RULES)if(r.test(t))return e;return"greet"}
 
-const pk=document.getElementById("pk");
-pk.onerror=()=>{pk.style.display="none";document.getElementById("pe").style.display="block"};
-pk.onload=()=>{pk.style.display="";document.getElementById("pe").style.display="none"};
+const G={
+stb:{l:["🎃[Приветствие] Тц, это ты... Лучше бы не приходил, ну ладно, заходи. Чего хотел?"],
+     c:[["Лучше бы ты не приходил","nogo"],["А че здесь происходит?","fort"],["Привет, хотел извиниться за вчерашнее... Не хотел ссорится","apol"]]},
+stg:{l:["🎃[Приветствие] Подходи Дружок, узнаем о тебе каждый грешок!"],
+     c:[["Привет! А что здесь происходит?","corner"],["У меня нет грехов!!","sin"]]},
+apol:{l:["🎃[Надменно] А, подлизываться пришел. Ясно... Ну хорошо, посмотрим за твоим поведением, сегодня я добрый {Отношение изменилось на смешанное}","👤А че ты здесь делаешь?"],
+      n:"fort"},
+fort:{l:["🎃[Довольный] Решил побыть гадалкой, все таки я в какой-то степени волшебное существо"],
+      c:[["Ты че, фрик?","nogo"],["Погадаешь мне?","ask"]]},
+nogo:{l:["🎃[Недовольный] Так уж и быть, не буду тратить на тебя драгоценное время и не буду гадать! {Отношение изменилось на ужасное}","👤Обиделся?","🎃[Улыбающийся] Не обиделся, просто недолюбливаю :)","👤Ты ведешь себя как ребёнок!","🎃[Недовольный] Зато ты такой взрослый. Иди Гуляй!"],e:1},
+corner:{l:["🎃[Улыбающийся] У нас теперь здесь уголок Гадалок. Ну а если серьёзно, то решил использовать свои силы по полной и заглянуть в будущее!","👤Погадаешь мне?"],n:"ask"},
+ask:{l:[],f:()=>init==="b"?"gB":"gG"},
+gB:{l:["🎃[Довольный] А ты меняешься... {Отношение изменилось на хорошее}"],n:"ball"},
+gG:{l:["🎃[Улыбающийся] А как же!)"],n:"ball"},
+sin:{l:["🎃[Улыбающийся] У всех есть свой грешок... Например я знаю с каким интересом ты смотрел(-а) на тот арт с Владом и Тоджи"],
+     c:[["НЕТ! ЭТО БЫЛА ПОДСТАВА!","mwa"],["Поверь, это еще было лучшее из того, что я видел(-а)...","mwa"]]},
+mwa:{l:["🎃[Довольный] МУХАХХАХ! В любом случае, присоединяйся, узнаем твою судьбу!"],
+     c:[["Ну давай...","ball"],["Нет спасибо, я верю только Марине Вип Люкс!","marina"]]},
+marina:{l:["🎃[Разочарованный] Жаль что ты такого мнения обо мне. Марина это та, которой памятник посвящен, который возле входа стоит, с болотной стороны? А ты уверен(-а) что этот Люксовый Вип не обманывает? {Отношение изменилось на недоверительное}"],
+        c:[["Хм... Ладно, доверюсь тебе...","ball"],["Нет! Маринка никогда не обманывает!","sons"]]},
+sons:{l:["🎃[Недовольный] Она лишь бросает своих сыновей?","👤Что...","🎃[Недовольный] Так ты будешь смотреть будущее?"],
+      c:[["Пожалуй, да {Отношение изменилось на смешанное}","ball"],["Нет, спасибо {Отношение изменилось на ужасное}","end"]]},
+end:{l:[],e:1},
+ball:{l:["<В руках у тыквы появляется Магический Хрустальный Шар(🔮)>","🎃[Довольный] Давай посмотрим, что видят мои тыквенные силы...","🎃[Гадающий] Будущее размыто...","🎃[Гадающий] Вижу загадочную белую маску... Она улыбается... И она в крови... <Показывает на экран картинку "+MASK+">","👤Что это значит?...","🎃[Задумчивый] Не знаю, но оно явно не из нашей вселенной","<Маска в шаре исчезает, шар становится обычным>","👤Есть еще что-то?...","🎃[Гадающий] .....","🎃[Гадающий] Вижу... Могила... На ней написано.... Не вижу!","<В хрустальном шаре появляется картинка "+EMPIRE_IMG+">","<Появляется значок ℹ️ «Тыква не очень долюбливает Империю... Может он боится ее?»>"],
+      c:[["*промолчать*","sil"],["Там написано «Империя Слэя!»","emp"]]},
+sil:{l:["🎃[Скептик] Видимо это Безымянная могила, ну да ладно! Давай погадаем ещё! Задавай вопросы про будущее, а мы узнаем!"],c:QS},
+emp:{l:["🎃[Испуганно злой] ЧТО? Это ошибка! Все! Сеанс окончен! {Отношение изменилось на недоверительное}","👤Э, КУДА?!","🎃[Испуганно злой] Тебе на сегодня достаточно знаний. Пойди прочь отсюда!"],e:1},
+money:{l:["<В шаре появляется картинка https://e.radikal.host/2026/10/15/IMG_4898.jpg>","🎃[Недовольный] Вы люди очень странные, зачем вам деньги? Что вы ими сделаете? Лучше бы попутешествовали, в Аткарск съездили! {Отношение изменилось на смешанное}","👤Слышь, философ, даже до Аткарска билет на электричку 2 сотки стоит, может дашь мне их тогда?","🎃[Испуганно злой] Все, все, успокойся. Но на такие вопросы ответить не могу","👤Ну и ладно!"],e:1},
+event:{l:["<В шаре летают туда-сюда новогодние елочки и снежинки, а по центру Санта>","🎃[Довольный] О, мне нравится такие вопросы.... {Отношение изменилось на отличное}","🎃[Гадающий] Вижу елочки, подарки... Так это Тайный Санта: Classic!","👤Что значит Classic?","🎃[Гадающий] Может быть это значит без всяких модификаций? Просто обычная игра?","👤А может...","🎃[Испуганно злой] ТИХО! Сейчас еще даже Хэллоуин не закончился!"],e:1},
+arg:{l:["<В шаре очень быстро меняются картинки https://s.fotora.ru/d7d42c759ccb06ce.jpeg https://s.fotora.ru/7ffb18bb03e18845.jpeg>","🎃[Гадающий] Не знаю, что это значит, но взглянем.... {Отношение изменилось на хорошее}","🎃[Гадающий] Вижу... 202...7.. 2027! А больше ничего не видно... Но я вижу ещё... Кто этот мальчик?... Ледяная вечеринка?...","🎃[Испуганно злой] Нет... Это же ведь не... УХОДИ! ТЕБЕ НУЖНО ПОКИНУТЬ ЭТО МЕСТО!","<Шар ломается, тыква сбегает>"],e:1}
+};
 
+/* КОНЦОВКИ */
+const ENDING_TEXT={
+  "Ужасное":"Жаль, но ты так и не добился хороших отношений с Тыквой. Печально, но может это будет уроком что не нужно быть таким грубым?",
+  "Недоверительное":"Эх, а ведь у тебя были шансы подружиться с тыквой. Благо, что он хотя бы не ненавидит. Не ненавидит. Что это за словосочетание? Короче жаль, удачи в других мини-играх",
+  "Смешанное":"Видимо ты приложил большую работу на проработку отношения с тыквой. Или нет? Или все таки она привередливая? У меня смешанные чувства....",
+  "Хорошее":"Воу, это было хорошо, ты теперь и впрямь можешь называть его своим другом! Главное не зазнавайся, вдруг найдутся те, кто подружился до лучших друзей?",
+  "Отличное":"ЧЕЕЕЕ. Ну ты реально босс. Кому-то обеспечен гарантированный билет в «Зомби-Лотерея»)"
+};
+
+/* ФОН */
+(function(){
+  const C=["#cdbdff","#4f9cff","#a493ff","#7cc0ff","#e0d6ff","#3f7bf0"],n=6;
+  let d='<svg viewBox="-500 -500 1000 1000" preserveAspectRatio="xMidYMid slice"><defs><filter id="vb"><feGaussianBlur stdDeviation="4"/></filter></defs><g filter="url(#vb)" fill="none" stroke-linecap="round">';
+  for(let k=0;k<n;k++){
+    let p="";
+    for(let i=0;i<=100;i++){
+      const t=i/100,r=10+640*Math.pow(t,1.55),a=k*2*Math.PI/n+t*5.2;
+      p+=(i?"L":"M")+(r*Math.cos(a)).toFixed(1)+" "+(r*Math.sin(a)).toFixed(1);
+    }
+    d+=`<path d="${p}" stroke="${C[k]}" stroke-width="${34+(k%2)*14}" stroke-opacity=".8"/>`;
+  }
+  document.getElementById("vx").innerHTML=d+"</g></svg>";
+})();
+
+/* СОСТОЯНИЕ */
 const $=id=>document.getElementById(id);
-let q=[],cur=null,pend=null,typing=false,tm=null,full="";
-let currentPlayerName="",currentChoices=[];
+const pk=$("pk");
+pk.onerror=()=>{pk.style.display="none";$("pe").style.display="block"};
+pk.onload=()=>{pk.style.display="";$("pe").style.display="none"};
+$("bimg").onerror=()=>{$("bimg").style.display="none";$("bt").textContent="картинка не загрузилась";$("bt").style.display="flex"};
 
-function normalizeName(name){
-  const trimmed = (name || "").trim();
-  if(!trimmed) return "";
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+let q=[],cur=null,pend=null,typing=false,tm=null,full="",init="";
+let fxT=null;
+
+function stopFx(){clearInterval(fxT);fxT=null;$("xm").style.display="none"}
+function flash(us){
+  us.forEach(u=>{new Image().src=u});
+  const i=$("bimg");$("bt").style.display="none";i.style.display="block";
+  let k=0;i.src=us[0];
+  const ms=matchMedia("(prefers-reduced-motion: reduce)").matches?700:120;
+  fxT=setInterval(()=>{i.src=us[++k%us.length]},ms);
 }
-
-async function findPlayerInFirebase(name){
-  if(!db) return null;
-  try{
-    const safeName = name.replace(/[.#$\[\]\/]/g, "_");
-    const playerRef = ref(db, 'tykva_saves/' + safeName);
-    const snapshot = await get(playerRef);
-    if(snapshot.exists()) return snapshot.val();
-    return null;
-  }catch(err){
-    console.error("Firebase ошибка чтения:", err);
-    return null;
+function xmas(){
+  $("bimg").style.display="none";$("bt").style.display="none";
+  const x=$("xm");x.style.display="block";
+  x.innerHTML=Array.from({length:9},(_,i)=>`<span style="top:${6+(i*29)%72}%;--d:${(2+(i%4)*.8).toFixed(1)}s;animation-delay:-${(i*.7).toFixed(1)}s,-${(i*.4).toFixed(1)}s;animation-direction:alternate,alternate">${i%3?"❄️":"🎄"}</span>`).join("")+'<span class="s">🎅</span>';
+}
+function act(s){
+  let m;
+  if(m=s.match(/значок\s*ℹ️?\s*[«"]([^»"]+)[»"]/i)){
+    $("bhint").textContent=m[1];
+    $("binfo").style.display="block";
+    return;
+  }
+  stopFx();
+  if(/исчезает|пропадает/i.test(s)){
+    $("bimg").style.display="none";
+    $("bt").style.display="none";
+    return;
+  }
+  const us=s.match(/https?:\/\/\S+/g);
+  if(us&&us.length>1){flash(us);return}
+  if(us){
+    const i=$("bimg");i.src=us[0];
+    i.style.display="block";
+    $("bt").style.display="none";
+    return;
+  }
+  if(/ломается/i.test(s)){
+    const b=$("ball");
+    b.classList.add("brk");
+    setTimeout(()=>{b.style.display="none"},1050);
+    pk.classList.add("run");
+    return;
+  }
+  if(/елочк|ёлочк|снежинк/i.test(s)){xmas();return}
+  if(m=s.match(/надпись\s*[«"]([^»"]+)[»"]/i)){
+    $("bimg").style.display="none";
+    $("bt").textContent=m[1];
+    $("bt").style.display="flex";
+    return;
+  }
+  if(/появляется/i.test(s)&&/шар/i.test(s)){
+    $("ball").style.display="block";
+    $("ball").classList.remove("brk");
   }
 }
 
-async function sendToFirebase(name,relation,level,choices){
-  if(!db) return {ok:false,error:"Firebase не подключён"};
-  try{
-    const safeName = name.replace(/[.#$\[\]\/]/g, "_");
-    const playerRef = ref(db, 'tykva_saves/' + safeName);
-    await set(playerRef, {name, relation, level, date: Date.now(), choices});
-    return {ok:true};
-  }catch(err){
-    console.error("Firebase ошибка:", err);
-    return {ok:false,error:err.message};
-  }
+function parse(line){
+  const who=line.startsWith("🎃")?"p":line.startsWith("👤")?"u":null;
+  let t=who?line.slice(2):line;
+  let emo=null;
+  const effs=[];
+  t=t.replace(/\[([^\]]+)\]/g,(m,x)=>{if(!emo)emo=x.trim().toLowerCase();return""});
+  t=t.replace(/\{([^}]*)\}/g,(m,x)=>{
+    const r=x.match(/на\s+([а-яё]+)/i);
+    if(r){
+      const k=r[1][0].toUpperCase()+r[1].slice(1).toLowerCase();
+      if(LEVELS[k]) effs.push(()=>setRelation(k));
+    }
+    return"";
+  });
+  t=t.replace(/<([^>]*)>/g,(m,x)=>{effs.push(()=>act(x));return""});
+  return{who,emo,effs,text:t.replace(/\s+/g," ").trim()};
 }
 
-function shakeScreen(strong=false){
-  const app=document.getElementById("app");
-  app.classList.remove("shake","shake-strong");void app.offsetWidth;
-  app.classList.add(strong?"shake-strong":"shake");
-  setTimeout(()=>app.classList.remove("shake","shake-strong"),500);
-}
-function type(who,text){
-  const u=who===U;$("box").className=u?"u":"";
+function show(L){
+  L.effs.forEach(f=>f());
+  if(!L.who||!L.text){next();return}
+  const u=L.who==="u";
+  $("box").className=u?"u":"";
   $("nm").textContent=u?"Ты":"Тыква";
-  if(!u){pk.src=IMG[emo(text)];if(/Ударяет/.test(text))shakeScreen(true)}
-  pk.classList.toggle("on",!u);$("me").classList.toggle("on",u);
-  $("ar").style.display="none";full=text;let i=0;typing=true;$("tx").textContent="";
-  clearInterval(tm);tm=setInterval(()=>{i++;$("tx").textContent=text.slice(0,i);if(i>=text.length)fin()},28);
+  if(!u&&EM[L.emo]) pk.src=E[EM[L.emo]];
+  pk.classList.toggle("on",!u);
+  $("binfo").style.display="none";
+  $("bhint").style.display="none";
+  $("ar").style.display="none";
+  full=L.text;let i=0;typing=true;$("tx").textContent="";
+  clearInterval(tm);
+  tm=setInterval(()=>{
+    i++;
+    $("tx").textContent=full.slice(0,i);
+    if(i>=full.length)fin();
+  },26);
 }
 function fin(){clearInterval(tm);typing=false;$("tx").textContent=full;$("ar").style.display="block"}
-function go(id){cur=N[id];q=cur.l.slice();next()}
+
+function go(id){cur=G[id];q=(cur.l||[]).slice();next()}
 function next(){
   if(typing){fin();return}
-  if($("ch").children.length||$("end").style.display==="flex")return;
-  if(q.length){const[w,t]=q.shift();type(w,t);return}
+  if($("ch").children.length)return;
+  if(q.length){show(parse(q.shift()));return}
   if(pend){const id=pend;pend=null;go(id);return}
-  if(cur.n){const id=cur.n;cur=Object.assign({},cur,{n:null});go(id);return}
+  if(cur.n){const id=cur.n;cur={...cur,n:null};go(id);return}
+  if(cur.f){go(cur.f());return}
   if(cur.c){
     $("ar").style.display="none";
     cur.c.forEach(([t,id])=>{
+      const r=document.createElement("div");
+      r.className="row";
       const b=document.createElement("button");
-      b.textContent=t;
-      b.onclick=()=>{currentChoices.push(t);$("ch").innerHTML="";pend=id;q=[];type(U,t)};
-      $("ch").appendChild(b);
+      b.textContent=parse("👤"+t).text;
+      b.onclick=()=>{
+        $("ch").innerHTML="";
+        pend=id;
+        q=["👤"+t];
+        next();
+      };
+      r.appendChild(b);
+      $("ch").appendChild(r);
     });
-  }else if(cur.e){showEnding(cur.e)}
+  }else if(cur.e){
+    $("ar").style.display="none";
+    showEnding();
+  }
 }
 
-async function showEnding(relation){
-  const[n,c]=LV[relation];
-  $("lab").textContent=relation;$("lab").style.color=c;
-  [...$("mt").children].forEach((s,i)=>{s.style.background=i<n?c:"";s.style.boxShadow=i<n?`0 0 10px ${c}`:""});
-  $("ending-text").textContent=ENDING_TEXT[relation]||"";
-  $("ending-text").style.borderLeftColor=c;
-  const st=$("saveStatus");st.textContent="Сохраняем...";st.className="save-status";
-  $("end").style.display="flex";
-
-  // Сохраняем в localStorage v3 (мгновенно, для блокировки)
-  saveLocalPlayer(currentPlayerName, relation, n);
-
-  // Параллельно в Firebase
-  const result=await sendToFirebase(currentPlayerName,relation,n,currentChoices);
-  if(result.ok){st.textContent=`✓ Результат для «${currentPlayerName}» сохранён`;st.className="save-status ok"}
-  else{st.textContent=`✓ Сохранено локально (Firebase недоступен)`;st.className="save-status ok"}
+/* ============ ЭКРАН "УЖЕ ПРОШЁЛ" ============ */
+function showAlreadyPlayed(data){
+  $("start").style.display="none";
+  $("notFound").style.display="none";
+  const L=LEVELS[data.relation];
+  $("apTitle").textContent=`Привет, ${data.name}!`;
+  const card=$("apCard");
+  card.style.borderColor=L.c;
+  card.style.boxShadow=`0 0 30px ${L.c}55`;
+  const rel=$("apRel");
+  rel.textContent=data.relation;
+  rel.style.color=L.c;
+  [...$("apBars").children].forEach((s,i)=>{
+    s.style.background=i<L.n?L.c:"#ffffff22";
+    s.style.boxShadow=i<L.n?`0 0 8px ${L.c}`:"";
+  });
+  $("apText").textContent=ENDING_TEXT[data.relation]||"";
+  $("alreadyPlayed").style.display="flex";
 }
 
-function begin(){
-  $("ch").innerHTML="";$("end").style.display="none";pend=null;currentChoices=[];
-  const g=GREET[Math.floor(Math.random()*GREET.length)];
-  cur={l:[],c:[["И тебе привет","hi"],["Че так грубо?!","rude"],["Простите, пожалуйста","polite"]]};
-  q=[[P,g]];next();
+/* ============ ФИНАЛ ============ */
+function showEnding(){
+  const L=LEVELS[currentRelation];
+  $("elab").textContent=currentRelation;
+  $("elab").style.color=L.c;
+  $("etext").textContent=ENDING_TEXT[currentRelation]||"";
+  $("etext").style.borderLeftColor=L.c;
+  $("ending").style.display="flex";
+
+  // В тестовом режиме НЕ сохраняем
+  if(isTestMode){
+    console.log("🧪 Тестовый режим — не сохраняем");
+    return;
+  }
+
+  // Сохраняем в localStorage (для блокировки)
+  savePart2Player(currentPlayer,currentRelation,L.n);
+
+  // И в Firebase (для тебя)
+  if(db && currentPlayer){
+    const safe=currentPlayer.replace(/[.#$\[\]\/]/g,"_");
+    set(ref(db,'tykva_saves/'+safe),{
+      name:currentPlayer,
+      relation:currentRelation,
+      level:L.n,
+      date:Date.now(),
+      part:2
+    }).then(()=>console.log("✓ Часть 2 сохранена"))
+    .catch(e=>console.error("Ошибка:",e));
+  }
 }
 
-function showExistingResult(player){
-  $("nameInput").style.display="none";
-  $("go").style.display="none";
-  $("confirmYes").style.display="none";
-  $("confirmNo").style.display="none";
-  $("nameHint").style.display="none";
-  $("startSub").style.display="none";
-  const lb=$("lockedBox");
-  lb.style.display="block";
-  const [n,c]=LV[player.relation]||[3,"#fd3"];
-  lb.innerHTML=`
-    <div class="locked-badge">Уже пройдено</div>
-    <div style="background:#1d1128ee;border:2px solid ${c};border-radius:14px;padding:16px 18px;max-width:340px;text-align:center;box-shadow:0 0 30px ${c}55;">
-      <div style="font-size:13px;opacity:.7;margin-bottom:6px">Привет, <b style="color:${c}">${player.name}</b>!</div>
-      <div style="font-size:13px;opacity:.7;margin-bottom:6px">Твоё отношение с Тыквой:</div>
-      <div style="font-size:24px;font-weight:800;color:${c};margin-bottom:12px;text-shadow:0 0 12px ${c}aa">${player.relation}</div>
-      <div style="display:flex;gap:5px;margin-bottom:14px">
-        ${[1,2,3,4,5].map(i=>`<i style="flex:1;height:10px;border-radius:5px;background:${i<=n?c:'#ffffff22'};${i<=n?`box-shadow:0 0 8px ${c}`:''}"></i>`).join("")}
-      </div>
-      <div style="font-size:12px;opacity:.7;line-height:1.5;font-style:italic">
-        ${ENDING_TEXT[player.relation]||""}
-      </div>
-    </div>
-  `;
+/* ============ СБРОС ============ */
+function resetStartScreen(keepName){
+  const nameInput=$("nameInput");
+  const goBtn=$("go");
+  const confirmYes=$("confirmYes");
+  const confirmNo=$("confirmNo");
+  const nameHint=$("nameHint");
+  const startStatus=$("startStatus");
+  nameInput.style.display="block";
+  goBtn.style.display="block";
+  confirmYes.style.display="none";
+  confirmNo.style.display="none";
+  confirmYes.disabled=false;
+  confirmYes.textContent="Да, всё верно";
+  if(!keepName) nameInput.value="";
+  goBtn.disabled=nameInput.value.trim().length<1;
+  nameHint.textContent="Указывай имя, которое вводил в первой части";
+  nameHint.style.color="#ffffff66";
+  nameHint.classList.remove("error");
+  startStatus.textContent="";
+  startStatus.className="save-status";
 }
 
-/* ============================================================
-   ГЛАВНАЯ ЛОГИКА
-   ============================================================ */
-(async () => {
-  await preloadAllImages();
-  $("loading").style.display = "none";
-  pk.src = IMG.greet;
-  $("si").src = IMG.greet;
-  $("start").style.display = "flex";
+/* ============ СТАРТ ============ */
+async function bootstrap(){
+  await preload();
+  $("loading").style.display="none";
 
-  const nameInput = $("nameInput");
-  const goBtn = $("go");
-  const confirmYes = $("confirmYes");
-  const confirmNo = $("confirmNo");
-  const startStatus = $("startStatus");
-  const nameHint = $("nameHint");
+  let savedName=null;
+  try{savedName=localStorage.getItem("tykva_current_player_v3")}catch(e){}
 
-  nameInput.addEventListener("input", () => {
-    const v = nameInput.value.trim();
-    goBtn.disabled = v.length < 1;
-    nameHint.textContent = "Указывай своё настоящее имя";
-    nameHint.className = "name-hint";
-    startStatus.textContent = "";
-    startStatus.className = "save-status";
+  if(savedName){
+    $("nameInput").value=savedName;
+    $("go").disabled=false;
+    $("nameHint").innerHTML=`Твоё имя из первой части: <b style="color:#ff8a1f">${savedName}</b>`;
+    $("nameHint").style.color="#f4eaffaa";
+  }
+
+  $("start").style.display="flex";
+
+  const nameInput=$("nameInput");
+  const goBtn=$("go");
+  const confirmYes=$("confirmYes");
+  const confirmNo=$("confirmNo");
+  const startStatus=$("startStatus");
+  const nameHint=$("nameHint");
+
+  nameInput.addEventListener("input",()=>{
+    const v=nameInput.value.trim();
+    goBtn.disabled=v.length<1;
+    if(savedName && v===savedName){
+      nameHint.innerHTML=`Твоё имя из первой части: <b style="color:#ff8a1f">${savedName}</b>`;
+      nameHint.style.color="#f4eaffaa";
+    } else {
+      nameHint.textContent="Указывай имя, которое вводил в первой части";
+      nameHint.style.color="#ffffff66";
+    }
+    nameHint.classList.remove("error");
+    startStatus.textContent="";
   });
 
-  nameInput.addEventListener("keydown", (e) => {
-    if(e.key === "Enter" && !goBtn.disabled) goBtn.click();
+  nameInput.addEventListener("keydown",(e)=>{
+    if(e.key==="Enter"&&!goBtn.disabled) goBtn.click();
   });
 
-  goBtn.addEventListener("click", () => {
-    const v = nameInput.value.trim();
-    if(v.length < 1){
-      nameHint.textContent = "Пожалуйста, укажи своё имя!";
-      nameHint.className = "name-hint error";
+  goBtn.addEventListener("click",()=>{
+    const v=nameInput.value.trim();
+    if(v.length<1){
+      nameHint.textContent="Пожалуйста, укажи своё имя!";
+      nameHint.classList.add("error");
       nameInput.classList.add("error");
       nameInput.focus();
-      setTimeout(() => nameInput.classList.remove("error"), 500);
+      setTimeout(()=>nameInput.classList.remove("error"),500);
       return;
     }
-    const normalized = normalizeName(v);
-    nameHint.innerHTML = `Тебя зовут <b>«${normalized}»</b>?`;
-    nameHint.className = "name-hint confirm";
-    nameInput.style.display = "none";
-    goBtn.style.display = "none";
-    confirmYes.style.display = "block";
-    confirmNo.style.display = "block";
+    const normalized=v.charAt(0).toUpperCase()+v.slice(1).toLowerCase();
+    nameHint.innerHTML=`Тебя зовут <b style="color:#ff8a1f">«${normalized}»</b>?`;
+    nameHint.style.color="#f4eaffcc";
+    nameInput.style.display="none";
+    goBtn.style.display="none";
+    confirmYes.style.display="block";
+    confirmNo.style.display="block";
   });
 
-  confirmYes.addEventListener("click", async () => {
-    currentPlayerName = normalizeName(nameInput.value);
+  confirmYes.addEventListener("click",async()=>{
+    const raw=nameInput.value.trim();
+    currentPlayer=raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase();
+    try{localStorage.setItem("tykva_current_player_v3",currentPlayer)}catch(e){}
 
-    confirmYes.disabled = true;
-    confirmYes.textContent = "Проверяем...";
-    startStatus.textContent = "Проверяем твоё имя...";
-    startStatus.className = "save-status";
+    // СПЕЦ-КОД
+    if(currentPlayer.toLowerCase()===TEST_NAME.toLowerCase()){
+      isTestMode=true;
+      console.log("🧪 Тестовый режим");
+      setRelation("Смешанное");
+      init="g";
+      $("start").style.display="none";
+      $("ch").innerHTML="";
+      pend=null;
+      pk.classList.remove("run");
+      $("ball").style.display="none";
+      $("ball").classList.remove("brk");
+      stopFx();
+      $("bimg").style.display="none";
+      $("bt").style.display="none";
+      $("binfo").style.display="none";
+      $("bhint").style.display="none";
+      go("stg");
+      return;
+    }
+    isTestMode=false;
 
-    // 1. localStorage v3 — мгновенно
-    const localPlayer = getLocalPlayer(currentPlayerName);
+    confirmYes.disabled=true;
+    confirmYes.textContent="Проверяем...";
+    startStatus.textContent="Заглядываем в хрустальный шар...";
+    startStatus.className="save-status";
 
-    if(localPlayer && localPlayer.date >= DEADLINE){
-      showExistingResult(localPlayer);
+    // 1. ЛОКАЛЬНАЯ ПРОВЕРКА — уже играл во 2-й части?
+    const localPlayed=getPart2Player(currentPlayer);
+    if(localPlayed){
+      showAlreadyPlayed(localPlayed);
       return;
     }
 
-    // 2. Firebase — на случай другого устройства
-    const fbPlayer = await findPlayerInFirebase(currentPlayerName);
+    // 2. Ищем игрока в Firebase (по name)
+    let prev=null;
+    if(db){
+      try{
+        const snap=await get(ref(db,'tykva_saves'));
+        if(snap.exists()){
+          let latest=null;
+          snap.forEach(child=>{
+            const data=child.val();
+            if(data && data.name && data.name.toLowerCase()===currentPlayer.toLowerCase()){
+              if(!latest || (data.date||0)>(latest.date||0)) latest=data;
+            }
+          });
+          if(latest) prev=latest;
+        }
+      }catch(e){console.error("Firebase read:",e)}
+    }
+    // fallback — localStorage v3 (от первой части)
+    if(!prev){
+      try{
+        const all=JSON.parse(localStorage.getItem("tykva_played_v3")||"{}");
+        if(all[currentPlayer]) prev=all[currentPlayer];
+      }catch(e){}
+    }
 
-    if(fbPlayer && fbPlayer.date >= DEADLINE){
-      showExistingResult(fbPlayer);
+    // Не нашли в базе 1-й части → не пускаем
+    if(!prev || !prev.relation || !LEVELS[prev.relation]){
+      $("start").style.display="none";
+      $("notFound").style.display="flex";
       return;
     }
 
-    // Ничего блокирующего не нашли → играем
-    $("start").style.display = "none";
-    begin();
+    // Нашли — ставим отношение и играем
+    const startRel=prev.relation;
+    setRelation(startRel);
+    init=(startRel==="Ужасное"||startRel==="Недоверительное")?"b":"g";
+
+    startStatus.textContent=`Твоё прошлое отношение: ${startRel}`;
+    startStatus.className="save-status ok";
+
+    setTimeout(()=>{
+      $("start").style.display="none";
+      $("ch").innerHTML="";
+      pend=null;
+      pk.classList.remove("run");
+      $("ball").style.display="none";
+      $("ball").classList.remove("brk");
+      stopFx();
+      $("bimg").style.display="none";
+      $("bt").style.display="none";
+      $("binfo").style.display="none";
+      $("bhint").style.display="none";
+      go(init==="b"?"stb":"stg");
+    },700);
   });
 
-  confirmNo.addEventListener("click", () => {
-    nameHint.textContent = "Указывай своё настоящее имя";
-    nameHint.className = "name-hint";
-    nameInput.style.display = "block";
-    goBtn.style.display = "block";
-    goBtn.disabled = false;
-    confirmYes.style.display = "none";
-    confirmNo.style.display = "none";
-    confirmYes.disabled = false;
-    confirmYes.textContent = "Да, всё верно";
-    startStatus.textContent = "";
+  confirmNo.addEventListener("click",()=>{
+    resetStartScreen(true);
     nameInput.focus();
   });
 
-  $("box").addEventListener("click", next);
-  $("ch").addEventListener("click", (e) => {
-    if(e.target.tagName !== "BUTTON") next();
+  $("notFoundRetry").addEventListener("click",()=>{
+    $("notFound").style.display="none";
+    $("start").style.display="flex";
+    resetStartScreen(false);
+    $("nameInput").focus();
   });
-})();
+
+  $("endBtn").onclick=()=>{
+    // После прохождения — перезагрузка, при вводе того же имени покажет "уже прошёл"
+    location.reload();
+  };
+
+  $("binfo").onclick=e=>{
+    e.stopPropagation();
+    const h=$("bhint");
+    h.style.display=h.style.display==="block"?"none":"block";
+  };
+  $("box").onclick=next;
+}
+
+bootstrap();
 </script>
 </body>
 </html>
