@@ -309,7 +309,7 @@ try{
 const TEST_NAME="ЛиляТест";
 let isTestMode=false;
 
-/* LOCALSTORAGE ДЛЯ БЛОКИРОВКИ ВТОРОЙ ЧАСТИ */
+/* LOCALSTORAGE */
 const LS_PART2_KEY="tykva_part2_played_v1";
 function getPart2Players(){
   try{
@@ -597,7 +597,7 @@ function next(){
   }
 }
 
-/* ============ ЭКРАН "УЖЕ ПРОШЁЛ" ============ */
+/* ============ УЖЕ ПРОШЁЛ ============ */
 function showAlreadyPlayed(data){
   $("start").style.display="none";
   $("notFound").style.display="none";
@@ -626,16 +626,15 @@ function showEnding(){
   $("etext").style.borderLeftColor=L.c;
   $("ending").style.display="flex";
 
-  // В тестовом режиме НЕ сохраняем
+  // Всегда пишем в localStorage (блокировка работает и для теста)
+  savePart2Player(currentPlayer,currentRelation,L.n);
+
+  // В Firebase — только если не тестовый режим
   if(isTestMode){
-    console.log("🧪 Тестовый режим — не сохраняем");
+    console.log("🧪 Тестовый режим — в Firebase не сохраняем");
     return;
   }
 
-  // Сохраняем в localStorage (для блокировки)
-  savePart2Player(currentPlayer,currentRelation,L.n);
-
-  // И в Firebase (для тебя)
   if(db && currentPlayer){
     const safe=currentPlayer.replace(/[.#$\[\]\/]/g,"_");
     set(ref(db,'tykva_saves/'+safe),{
@@ -738,41 +737,50 @@ async function bootstrap(){
     currentPlayer=raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase();
     try{localStorage.setItem("tykva_current_player_v3",currentPlayer)}catch(e){}
 
-    // СПЕЦ-КОД
+    // Спец-код: ставим флаг, но НЕ выходим сразу
     if(currentPlayer.toLowerCase()===TEST_NAME.toLowerCase()){
       isTestMode=true;
-      console.log("🧪 Тестовый режим");
-      setRelation("Смешанное");
-      init="g";
-      $("start").style.display="none";
-      $("ch").innerHTML="";
-      pend=null;
-      pk.classList.remove("run");
-      $("ball").style.display="none";
-      $("ball").classList.remove("brk");
-      stopFx();
-      $("bimg").style.display="none";
-      $("bt").style.display="none";
-      $("binfo").style.display="none";
-      $("bhint").style.display="none";
-      go("stg");
-      return;
+      console.log("🧪 Тестовый режим — Firebase не трогаем, блокировка работает");
+    } else {
+      isTestMode=false;
     }
-    isTestMode=false;
 
     confirmYes.disabled=true;
     confirmYes.textContent="Проверяем...";
     startStatus.textContent="Заглядываем в хрустальный шар...";
     startStatus.className="save-status";
 
-    // 1. ЛОКАЛЬНАЯ ПРОВЕРКА — уже играл во 2-й части?
+    // 1. ЛОКАЛЬНАЯ ПРОВЕРКА
     const localPlayed=getPart2Player(currentPlayer);
     if(localPlayed){
       showAlreadyPlayed(localPlayed);
       return;
     }
 
-    // 2. Ищем игрока в Firebase (по name)
+    // 2. ТЕСТ-РЕЖИМ — не идёт в Firebase, стартует со «Смешанного»
+    if(isTestMode){
+      setRelation("Смешанное");
+      init="g";
+      startStatus.textContent="Тестовый режим";
+      startStatus.className="save-status ok";
+      setTimeout(()=>{
+        $("start").style.display="none";
+        $("ch").innerHTML="";
+        pend=null;
+        pk.classList.remove("run");
+        $("ball").style.display="none";
+        $("ball").classList.remove("brk");
+        stopFx();
+        $("bimg").style.display="none";
+        $("bt").style.display="none";
+        $("binfo").style.display="none";
+        $("bhint").style.display="none";
+        go("stg");
+      },400);
+      return;
+    }
+
+    // 3. ОБЫЧНЫЙ ПОИСК В FIREBASE
     let prev=null;
     if(db){
       try{
@@ -789,7 +797,7 @@ async function bootstrap(){
         }
       }catch(e){console.error("Firebase read:",e)}
     }
-    // fallback — localStorage v3 (от первой части)
+    // fallback — localStorage v3
     if(!prev){
       try{
         const all=JSON.parse(localStorage.getItem("tykva_played_v3")||"{}");
@@ -797,14 +805,12 @@ async function bootstrap(){
       }catch(e){}
     }
 
-    // Не нашли в базе 1-й части → не пускаем
     if(!prev || !prev.relation || !LEVELS[prev.relation]){
       $("start").style.display="none";
       $("notFound").style.display="flex";
       return;
     }
 
-    // Нашли — ставим отношение и играем
     const startRel=prev.relation;
     setRelation(startRel);
     init=(startRel==="Ужасное"||startRel==="Недоверительное")?"b":"g";
@@ -841,7 +847,6 @@ async function bootstrap(){
   });
 
   $("endBtn").onclick=()=>{
-    // После прохождения — перезагрузка, при вводе того же имени покажет "уже прошёл"
     location.reload();
   };
 
